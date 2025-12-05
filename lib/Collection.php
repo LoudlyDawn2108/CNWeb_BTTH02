@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional;
+namespace Lib;
 
 class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
     protected array $items;

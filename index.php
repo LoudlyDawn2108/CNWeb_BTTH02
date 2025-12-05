@@ -1,14 +1,25 @@
 ﻿<?php
+/**
+ * Online Course Management System
+ */
+
 session_start();
+
+// Define base path
 define('BASE_PATH', __DIR__);
 
-// Autoload Controllers & Models
+// Autoload controllers
 spl_autoload_register(function ($class) {
+    // Handle namespaced classes (e.g., Functional\Option)
+    $classPath = str_replace('\\', '/', $class);
+
     $paths = [
         BASE_PATH . '/controllers/' . $class . '.php',
         BASE_PATH . '/models/' . $class . '.php',
-        BASE_PATH . '/config/' . $class . '.php'
+        BASE_PATH . '/config/' . $class . '.php',
+        BASE_PATH . '/lib/' . $classPath . '.php'
     ];
+
     foreach ($paths as $path) {
         if (file_exists($path)) {
             require_once $path;
@@ -17,39 +28,48 @@ spl_autoload_register(function ($class) {
     }
 });
 
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+// Get the request URI
+$requestUri = $_SERVER['REQUEST_URI'];
+$requestUri = parse_url($requestUri, PHP_URL_PATH);
 $requestUri = rtrim($requestUri, '/');
-if (empty($requestUri)) $requestUri = '/';
 
-// Router - Định tuyến
-try {
-    // --- KHU VỰC PUBLIC ---
-    if ($requestUri === '/' || $requestUri === '/home') {
-        $controller = new HomeController();
-        $controller->index();
-    }
-    // --- KHU VỰC AUTH (Login/Register) ---
-    elseif ($requestUri === '/auth/login') {
-        $controller = new AuthController();
-        $_SERVER['REQUEST_METHOD'] === 'POST' ? $controller->login() : $controller->showLogin();
-    }
-    // --- KHU VỰC SINH VIÊN ---
-    elseif ($requestUri === '/student/dashboard') {
-        echo 'Trang Dashboard Sinh Vien';
-    }
-    // --- KHU VỰC GIẢNG VIÊN ---
-    elseif ($requestUri === '/instructor/dashboard') {
-        echo 'Trang Dashboard Giang Vien';
-    }
-    // --- KHU VỰC ADMIN ---
-    elseif ($requestUri === '/admin/dashboard') {
-        echo 'Trang Dashboard Admin';
-    }
-    else {
-        http_response_code(404);
-        echo '<h1>404 Page Not Found</h1>';
-    }
-} catch (Exception $e) {
-    echo 'Lỗi: ' . $e->getMessage();
+if (empty($requestUri)) {
+    $requestUri = '/';
 }
-?>
+
+try {
+    $router = new Router();
+
+    // ----------------- TEAM MEMBER 1: Core Infrastructure & Public Course Catalog  & Auth -----------------
+    
+    // Home
+    $router->get('/', [HomeController::class, 'index']);
+    $router->get('/home', [HomeController::class, 'index']);
+    
+    // Auth
+    $router->get('/auth/login', [AuthController::class, 'showLogin']);
+    $router->post('/auth/login', [AuthController::class, 'login']);
+
+    // ----------------- TEAM MEMBER 2: Authentication & Student Dashboard -----------------
+
+    // ----------------- TEAM MEMBER 3: Instructor Module (Full-Stack) -----------------
+
+    // ----------------- TEAM MEMBER 4: Admin Module (Full-Stack) -----------------
+
+
+    // Dispatch
+    $router->dispatch($_SERVER['REQUEST_METHOD'], $requestUri);
+
+} catch (Lib\ValidationException $e) {
+    // Handle Validation Errors
+    $_SESSION['error'] = implode('<br>', $e->errors);
+    $_SESSION['old'] = $e->old;
+    
+    $referer = $_SERVER['HTTP_REFERER'] ?? '/';
+    header("Location: $referer");
+    exit;
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo 'Server Error: ' . $e->getMessage();
+}

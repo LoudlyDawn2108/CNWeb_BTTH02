@@ -1,5 +1,7 @@
 ﻿<?php
-class AuthController extends BaseController {
+use Lib\Controller;
+
+class AuthController extends Controller {
     public function showLogin() {
         echo 'Form Login';
     }
