@@ -54,6 +54,33 @@ try {
 
     // ----------------- TEAM MEMBER 3: Instructor Module (Full-Stack) -----------------
 
+    // 1. Dashboard
+    $router->get('/instructor/dashboard', [InstructorController::class, 'dashboard']);
+    $router->get('/instructor/my-courses', [InstructorController::class, 'myCourses']);
+
+    // 2. Course Management
+    $router->get('/instructor/courses/create', [InstructorController::class, 'create']); // Đã sửa tên hàm cho ngắn
+    $router->post('/instructor/courses/store', [InstructorController::class, 'store']);
+
+    $router->get('/instructor/courses/{id}/edit', [InstructorController::class, 'edit']);
+    $router->post('/instructor/courses/{id}/update', [InstructorController::class, 'update']);
+    $router->post('/instructor/courses/{id}/delete', [InstructorController::class, 'delete']);
+    $router->get('/instructor/courses/{id}/manage', [InstructorController::class, 'manageCourse']);
+
+    // 3. Lesson Management
+    $router->get('/instructor/courses/{id}/lessons', [LessonController::class, 'manage']);
+    $router->get('/instructor/courses/{id}/lessons/create', [LessonController::class, 'create']);
+    $router->post('/instructor/courses/{id}/lessons/store', [LessonController::class, 'store']);
+
+    // 4. Specific Lesson Actions
+    $router->get('/instructor/lessons/{id}/edit', [LessonController::class, 'edit']);
+    $router->post('/instructor/lessons/{id}/update', [LessonController::class, 'update']);
+    $router->post('/instructor/lessons/{id}/delete', [LessonController::class, 'delete']);
+
+    // 5. Material Actions
+    $router->post('/instructor/lessons/{id}/materials/upload', [LessonController::class, 'uploadMaterial']);
+    $router->post('/instructor/materials/{id}/delete', [LessonController::class, 'deleteMaterial']);
+
     // ----------------- TEAM MEMBER 4: Admin Module (Full-Stack) -----------------
 
 
