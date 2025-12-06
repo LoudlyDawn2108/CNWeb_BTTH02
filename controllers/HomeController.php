@@ -7,6 +7,7 @@ require_once __DIR__ . '/../viewmodels/HomeViewModel.php';
 use Lib\Controller;
 use ViewModels\HomeIndexViewModel;
 use ViewModels\FeaturedCourse;
+use ViewModels\PageViewModel;
 
 class HomeController extends Controller
 {
@@ -31,7 +32,19 @@ class HomeController extends Controller
             ->limit(6)
             ->get(FeaturedCourse::class);
 
-        $categories = Category::all();
+        // Fetch categories with course count
+        $catAlias = 'cat';
+        $courseAlias = 'c';
+        
+        $categories = Category::query()
+            ->select([
+                "$catAlias.*",
+                "COUNT($courseAlias." . Course::ID . ") as course_count"
+            ])
+            ->table(Category::TABLE . " $catAlias")
+            ->leftJoin(Course::TABLE . " $courseAlias", "$catAlias." . Category::ID, '=', "$courseAlias." . Course::CATEGORY_ID)
+            ->groupBy("$catAlias." . Category::ID)
+            ->get(Category::class);
 
         $viewModel = new HomeIndexViewModel(
             title: "Trang chủ - Feetcode",

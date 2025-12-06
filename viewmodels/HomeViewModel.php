@@ -2,11 +2,12 @@
 
 namespace ViewModels;
 
-use Lib\ViewModel;
-use Course;
 use Category;
+use Course;
+use Lib\ViewModel;
 
-class FeaturedCourse extends Course {
+class FeaturedCourse extends Course
+{
     public ?string $category_name = null;
     public ?string $instructor_name = null;
 }
@@ -22,11 +23,17 @@ class HomeIndexViewModel extends ViewModel
         public string $title,
         public array  $featuredCourses,
         public array  $categories,
-    ){}
+    )
+    {
+    }
 }
 
 class PageViewModel extends ViewModel
 {
-    public string $title;
+    public function __construct(
+        public string $title
+    )
+    {
+    }
 }
 

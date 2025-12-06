@@ -8,6 +8,7 @@ class QueryBuilder {
     protected array $joins = [];
     protected array $wheres = [];
     protected array $params = [];
+    protected array $groups = [];
     protected array $orders = [];
     protected ?int $limit = null;
     protected ?int $offset = null;
@@ -80,6 +81,15 @@ class QueryBuilder {
     public function whereRaw(string $sql, array $bindings = []): self {
         $this->wheres[] = $sql;
         $this->params = array_merge($this->params, $bindings);
+        return $this;
+    }
+
+    /**
+     * Add a GROUP BY clause
+     */
+    public function groupBy(string|array $groups): self {
+        $groups = is_array($groups) ? $groups : func_get_args();
+        $this->groups = array_merge($this->groups, $groups);
         return $this;
     }
 
@@ -238,6 +248,10 @@ class QueryBuilder {
         }
         
         $sql .= $this->compileWheres();
+
+        if (!empty($this->groups)) {
+            $sql .= ' GROUP BY ' . implode(', ', $this->groups);
+        }
         
         if (!empty($this->orders)) {
             $sql .= ' ORDER BY ' . implode(', ', $this->orders);
