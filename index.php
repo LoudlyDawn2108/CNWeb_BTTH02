@@ -66,6 +66,9 @@ try {
     // ----------------- TEAM MEMBER 3: Instructor Module (Full-Stack) -----------------
 
     // ----------------- TEAM MEMBER 4: Admin Module (Full-Stack) -----------------
+    
+    // Admin Dashboard
+    $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
 
 
     // Dispatch
