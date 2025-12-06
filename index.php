@@ -24,7 +24,8 @@ spl_autoload_register(function ($class) {
         BASE_PATH . '/controllers/' . $class . '.php',
         BASE_PATH . '/models/' . $class . '.php',
         BASE_PATH . '/config/' . $class . '.php',
-        BASE_PATH . '/lib/' . $classPath . '.php'
+        BASE_PATH . '/lib/' . $classPath . '.php',
+        BASE_PATH . '/' . $classPath . '.php'
     ];
 
     foreach ($paths as $path) {
