@@ -3,15 +3,18 @@
 use Lib\Controller;
 use ViewModels\HomeIndexViewModel;
 
-class HomeController extends Controller {
+class HomeController extends Controller
+{
     public function index(): void
     {
         $featuredCourses = [];
         $categories = [];
         $viewModel = new HomeIndexViewModel(
-            title: ""
+            title: "Trang chủ - Feetcode",
+            featuredCourses: $featuredCourses,
+            categories: $categories
         );
-        
-        $this->render('home/index', $viewModel); 
+
+        $this->render('home/index', $viewModel);
     }
 }

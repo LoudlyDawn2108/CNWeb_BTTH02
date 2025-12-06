@@ -2,7 +2,9 @@
 
 namespace ViewModels;
 
-class HomeIndexViewModel
+use Lib\ViewModel;
+
+class HomeIndexViewModel extends ViewModel
 {
     public function __construct(
         public string $title,
@@ -11,7 +13,7 @@ class HomeIndexViewModel
     ){}
 }
 
-class PageViewModel
+class PageViewModel extends ViewModel
 {
     public string $title;
 }
