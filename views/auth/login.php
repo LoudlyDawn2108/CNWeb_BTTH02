@@ -1,0 +1,45 @@
+<?php
+/** @var AuthLoginViewModel $viewModel */
+
+use ViewModels\AuthLoginViewModel;
+
+?>
+<div class="d-flex align-items-center justify-content-center flex-grow-1">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4">
+                            <i class="bi bi-box-arrow-in-right"></i> <?= $viewModel->title ?>
+                        </h3>
+
+                        <form action="/auth/login" method="POST">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Tên đăng nhập hoặc Email</label>
+                                <input type="text" class="form-control" id="username" name="username" required autofocus>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mật khẩu</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                            </button>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <p class="text-center mb-0">
+                            Chưa có tài khoản? <a href="/auth/register">Đăng ký ngay</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

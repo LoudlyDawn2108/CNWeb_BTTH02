@@ -2,8 +2,8 @@
 
 namespace ViewModels;
 
-use Category;
-use Course;
+use Models\Category;
+use Models\Course;
 use Lib\ViewModel;
 
 class FeaturedCourse extends Course

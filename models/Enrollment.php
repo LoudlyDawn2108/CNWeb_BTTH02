@@ -1,4 +1,7 @@
 <?php
+namespace Models;
+use Model;
+
 require_once __DIR__ . '/../lib/Model.php';
 
 class Enrollment extends Model {

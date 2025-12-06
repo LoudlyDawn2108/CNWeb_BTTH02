@@ -1,8 +1,4 @@
-﻿<?php
-/**
- * Online Course Management System
- */
-
+<?php
 session_start();
 
 // Define base path
@@ -60,6 +56,9 @@ try {
     // Auth
     $router->get('/auth/login', [AuthController::class, 'showLogin']);
     $router->post('/auth/login', [AuthController::class, 'login']);
+    $router->get('/auth/register', [AuthController::class, 'showRegister']);
+    $router->post('/auth/register', [AuthController::class, 'register']);
+    $router->get('/auth/logout', [AuthController::class, 'logout']);
 
     // ----------------- TEAM MEMBER 2: Authentication & Student Dashboard -----------------
 
