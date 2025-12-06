@@ -37,7 +37,7 @@ class HomeController extends Controller
         // Fetch categories with course count
         $catAlias = 'cat';
         $courseAlias = 'c';
-        
+
         $categories = Category::query()
             ->select([
                 "$catAlias.*",
