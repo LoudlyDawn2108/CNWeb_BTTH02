@@ -14,7 +14,7 @@ spl_autoload_register(function ($class) {
     $classPath = str_replace('\\', '/', $class);
 
     // Fix for Lib namespace mapping to lib directory
-    if (strpos($class, 'Lib\\') === 0) {
+    if (str_starts_with($class, 'Lib\\')) {
         $libClassPath = str_replace('Lib\\', '', $class); // Remove 'Lib\' prefix
         $libClassPath = str_replace('\\', '/', $libClassPath);
         $libFile = BASE_PATH . '/lib/' . $libClassPath . '.php';

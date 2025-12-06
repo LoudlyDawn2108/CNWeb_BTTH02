@@ -1,6 +1,5 @@
 <?php
 /** @var ViewModel $viewModel */
-
 use Lib\ViewModel;
 
 ?>
@@ -18,7 +17,7 @@ use Lib\ViewModel;
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="/">
-            <i class="bi bi-mortarboard-fill"></i> Online Course
+            <i class="bi bi-mortarboard-fill"></i> FeetCode
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
