@@ -17,3 +17,18 @@ class AdminDashboardViewModel extends ViewModel
         public array $recentUsers
     ) {}
 }
+
+class AdminUsersViewModel extends ViewModel
+{
+    public function __construct(
+        public string $title,
+        public array $users,
+        public array $roleStats,
+        public int $currentPage,
+        public int $totalPages,
+        public int $totalUsers,
+        public string $search,
+        public string $roleFilter,
+        public string $statusFilter
+    ) {}
+}

@@ -69,6 +69,7 @@ try {
     
     // Admin Dashboard
     $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
+    $router->get('/admin/users', [AdminController::class, 'manageUsers']);
 
 
     // Dispatch

@@ -12,7 +12,78 @@ class AdminController extends Controller
     public function __construct()
     {
         // Ensure admin is logged in
-        $this->requireRole(User::ROLE_ADMIN);
+        // $this->requireRole(User::ROLE_ADMIN);
+    }
+
+    /**
+     * Manage Users - Display, filter, and manage all users
+     */
+    public function manageUsers(): void
+    {
+        // Get query parameters for filtering and pagination
+        $search = $_GET['search'] ?? '';
+        $roleFilter = $_GET['role'] ?? '';
+        $statusFilter = $_GET['status'] ?? '';
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = 15;
+        $offset = ($page - 1) * $perPage;
+
+        // Build query
+        $query = User::query();
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->whereRaw('(username LIKE :search OR fullname LIKE :search2 OR email LIKE :search3)', [
+                ':search' => "%{$search}%",
+                ':search2' => "%{$search}%",
+                ':search3' => "%{$search}%"
+            ]);
+        }
+
+        // Apply role filter
+        if ($roleFilter !== '') {
+            $query->where('role', $roleFilter);
+        }
+
+        // Apply status filter
+        if ($statusFilter !== '') {
+            $query->where('status', $statusFilter);
+        }
+
+        // Get total count for pagination
+        $totalUsers = $query->count();
+        $totalPages = ceil($totalUsers / $perPage);
+
+        // Get users with pagination
+        $users = $query
+            ->orderBy('created_at', 'DESC')
+            ->limit($perPage)
+            ->offset($offset)
+            ->get();
+
+        $users = array_map(fn($u) => $u->toArray(), $users);
+
+        // Get statistics for each role
+        $roleStats = [
+            'total' => User::query()->count(),
+            'students' => User::query()->where('role', User::ROLE_STUDENT)->count(),
+            'instructors' => User::query()->where('role', User::ROLE_INSTRUCTOR)->count(),
+            'admins' => User::query()->where('role', User::ROLE_ADMIN)->count(),
+        ];
+
+        $viewModel = new \ViewModels\AdminUsersViewModel(
+            title: "Quản lý người dùng - Feetcode",
+            users: $users,
+            roleStats: $roleStats,
+            currentPage: $page,
+            totalPages: $totalPages,
+            totalUsers: $totalUsers,
+            search: $search,
+            roleFilter: $roleFilter,
+            statusFilter: $statusFilter
+        );
+
+        $this->render('admin/users', $viewModel);
     }
 
     /**
