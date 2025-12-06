@@ -4,6 +4,7 @@ namespace Controllers;
 use Functional\Collection;
 use Functional\Option;
 use Functional\Result;
+use Lib\Controller;
 use Models\Course;
 use Models\Category;
 use Models\Lesson;
@@ -11,7 +12,7 @@ use ViewModels\Instructor\CourseFormViewModel;
 use ViewModels\Instructor\CourseManageViewModel;
 use ViewModels\Instructor\InstructorDashboardViewModel;
 
-class InstructorController extends BaseController {
+class InstructorController extends Controller {
 
     public function dashboard(): void
     {

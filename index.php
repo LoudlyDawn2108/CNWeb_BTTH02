@@ -11,7 +11,7 @@ session_start();
 // Define base path
 define('BASE_PATH', __DIR__);
 
-// Autoload controllers
+// Autoload Controllers
 spl_autoload_register(function ($class) {
     // Handle namespaced classes (e.g., Functional\Option)
     $classPath = str_replace('\\', '/', $class);
@@ -28,8 +28,8 @@ spl_autoload_register(function ($class) {
     }
 
     $paths = [
-        BASE_PATH . '/controllers/' . $class . '.php',
-        BASE_PATH . '/models/' . $class . '.php',
+        BASE_PATH . '/Controllers/' . $class . '.php',
+        BASE_PATH . '/Models/' . $class . '.php',
         BASE_PATH . '/config/' . $class . '.php',
         BASE_PATH . '/lib/' . $classPath . '.php',
         BASE_PATH . '/' . $classPath . '.php'

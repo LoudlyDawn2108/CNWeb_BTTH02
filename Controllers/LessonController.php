@@ -1,7 +1,8 @@
 <?php
 namespace Controllers;
 
-use Controllers\BaseController;
+use JetBrains\PhpStorm\NoReturn;
+use Lib\Controller;
 use Models\Lesson;
 use Models\Course;
 use Models\Material;
@@ -9,10 +10,11 @@ use ViewModels\Instructor\LessonFormViewModel;
 use Functional\Collection; // Dùng Collection thì ok
 use Functional\Option;     // Dùng Option cho ViewModel thì ok
 
-class LessonController extends BaseController {
+class LessonController extends Controller {
 
     // 1. Form tạo bài học
-    public function create($courseId) {
+    public function create($courseId): void
+    {
         // ViewModel của bạn cần Option, nên ở đây dùng Option::none() là đúng
         $viewModel = new LessonFormViewModel(
             (int)$courseId,
@@ -44,14 +46,14 @@ class LessonController extends BaseController {
     }
 
     // 3. Form sửa bài học
-    public function edit($id) {
+    public function edit($id): void
+    {
         // Lib\Model::find trả về Object hoặc Null
         $lesson = Lesson::find($id);
 
         if (!$lesson) {
             $this->setErrorMessage('Không tìm thấy bài học');
             $this->redirect('/instructor/dashboard');
-            return;
         }
 
         // Lấy tài liệu (Giả sử Material model cũng kế thừa Lib\Model)
@@ -81,6 +83,7 @@ class LessonController extends BaseController {
     }
 
     // 4. Update bài học (Sửa lại theo Lib\Model)
+    #[NoReturn]
     public function update($id): void
     {
         $lesson = Lesson::find($id);
@@ -88,7 +91,6 @@ class LessonController extends BaseController {
         if (!$lesson) {
             $this->setErrorMessage('Không tìm thấy bài học');
             $this->redirect('/instructor/dashboard');
-            return;
         }
 
         // ✅ Dùng fill() thay vì gán từng property

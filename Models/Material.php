@@ -7,11 +7,12 @@ namespace Models;
 
 
 use Functional\Collection;
+use lib\Model;
 use PDO;
 require_once __DIR__ . '/../lib/Model.php';
 require_once __DIR__ . '/../config/Database.php';
 
-class Material {
+class Material extends Model {
     const TABLE = 'materials';
     const ID = 'id';
     const LESSON_ID = 'lesson_id';
