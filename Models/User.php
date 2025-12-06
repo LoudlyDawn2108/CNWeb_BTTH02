@@ -1,9 +1,8 @@
 <?php
 namespace Models;
-use Model;
-
 require_once __DIR__ . '/../lib/Model.php';
 
+use lib\Model;
 class User extends Model {
     const TABLE = 'users';
     const ID = 'id';

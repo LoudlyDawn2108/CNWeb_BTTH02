@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../models/Course.php';
 require_once __DIR__ . '/../models/Category.php';
 require_once __DIR__ . '/../models/User.php'; // Add User model include
@@ -37,7 +38,7 @@ class HomeController extends Controller
         // Fetch categories with course count
         $catAlias = 'cat';
         $courseAlias = 'c';
-        
+
         $categories = Category::query()
             ->select([
                 "$catAlias.*",
