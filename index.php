@@ -63,6 +63,9 @@ try {
 
     // ----------------- TEAM MEMBER 2: Authentication & Student Dashboard -----------------
 
+    $router->post('/enrollment/enroll', [EnrollmentController::class, 'enroll']);
+    $router->post('/enrollment/unenroll', [EnrollmentController::class, 'unenroll']);
+
     // ----------------- TEAM MEMBER 3: Instructor Module (Full-Stack) -----------------
 
     // ----------------- TEAM MEMBER 4: Admin Module (Full-Stack) -----------------
