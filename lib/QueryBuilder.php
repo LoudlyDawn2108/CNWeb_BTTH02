@@ -110,33 +110,37 @@ class QueryBuilder {
     /**
      * Execute SELECT query and return all results
      */
-    public function get(): array {
+    public function get(?string $className = null): array {
         $sql = $this->compileSelect();
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($this->params);
         
-        if ($this->modelClass) {
-            return $stmt->fetchAll(PDO::FETCH_CLASS, $this->modelClass);
+        $fetchClass = $className ?? $this->modelClass;
+        
+        if ($fetchClass) {
+            return $stmt->fetchAll(PDO::FETCH_CLASS, $fetchClass);
         }
         
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     /**
      * Execute SELECT query and return the first result
      */
-    public function first(): mixed {
+    public function first(?string $className = null): mixed {
         $this->limit(1);
         $sql = $this->compileSelect();
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($this->params);
         
-        if ($this->modelClass) {
-            $stmt->setFetchMode(PDO::FETCH_CLASS, $this->modelClass);
+        $fetchClass = $className ?? $this->modelClass;
+        
+        if ($fetchClass) {
+            $stmt->setFetchMode(PDO::FETCH_CLASS, $fetchClass);
             return $stmt->fetch() ?: null;
         }
         
-        return $stmt->fetch() ?: null;
+        return $stmt->fetch(PDO::FETCH_OBJ) ?: null;
     }
 
     /**

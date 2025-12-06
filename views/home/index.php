@@ -32,12 +32,12 @@ use ViewModels\HomeIndexViewModel;
         <div class="row g-4">
             <?php foreach ($viewModel->categories as $category): ?>
                 <div class="col-6 col-md-4 col-lg-2">
-                    <a href="/courses?category=<?= $category['id'] ?>" class="text-decoration-none">
+                    <a href="/courses?category=<?= $category->id ?>" class="text-decoration-none">
                         <div class="card h-100 text-center hover-shadow">
                             <div class="card-body">
                                 <i class="bi bi-folder2-open fs-1 text-primary"></i>
-                                <h6 class="card-title mt-2 mb-0"><?= htmlspecialchars($category['name']) ?></h6>
-                                <small class="text-muted"><?= $category['course_count'] ?? 0 ?> khóa học</small>
+                                <h6 class="card-title mt-2 mb-0"><?= htmlspecialchars($category->name) ?></h6>
+                                <small class="text-muted"><?= $category->course_count ?> khóa học</small>
                             </div>
                         </div>
                     </a>
@@ -62,8 +62,8 @@ use ViewModels\HomeIndexViewModel;
                 <?php foreach ($viewModel->featuredCourses as $course): ?>
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 hover-shadow">
-                            <?php if ($course['image']): ?>
-                                <img src="/<?= htmlspecialchars($course['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($course['title']) ?>" style="height: 180px; object-fit: cover;">
+                            <?php if ($course->image): ?>
+                                <img src="/<?= htmlspecialchars($course->image) ?>" class="card-img-top" alt="<?= htmlspecialchars($course->title) ?>" style="height: 180px; object-fit: cover;">
                             <?php else: ?>
                                 <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
                                     <i class="bi bi-image text-white fs-1"></i>
@@ -71,27 +71,27 @@ use ViewModels\HomeIndexViewModel;
                             <?php endif; ?>
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="badge bg-primary"><?= htmlspecialchars($course['category_name']) ?></span>
-                                    <span class="badge bg-<?= $course['level'] === 'Beginner' ? 'success' : ($course['level'] === 'Intermediate' ? 'warning' : 'danger') ?>">
-                                        <?= htmlspecialchars($course['level']) ?>
+                                    <span class="badge bg-primary"><?= htmlspecialchars($course->category_name) ?></span>
+                                    <span class="badge bg-<?= $course->level === 'Beginner' ? 'success' : ($course->level === 'Intermediate' ? 'warning' : 'danger') ?>">
+                                        <?= htmlspecialchars($course->level) ?>
                                     </span>
                                 </div>
-                                <h5 class="card-title"><?= htmlspecialchars($course['title']) ?></h5>
+                                <h5 class="card-title"><?= htmlspecialchars($course->title) ?></h5>
                                 <p class="card-text text-muted small">
-                                    <?= htmlspecialchars(substr($course['description'], 0, 100)) ?>...
+                                    <?= htmlspecialchars(substr($course->description, 0, 100)) ?>...
                                 </p>
                                 <div class="d-flex align-items-center mb-2">
                                     <i class="bi bi-person-circle me-1"></i>
-                                    <small class="text-muted"><?= htmlspecialchars($course['instructor_name']) ?></small>
+                                    <small class="text-muted"><?= htmlspecialchars($course->instructor_name) ?></small>
                                 </div>
                             </div>
                             <div class="card-footer bg-white d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="fw-bold text-primary">
-                                        <?= $course['price'] > 0 ? number_format($course['price'], 0, ',', '.') . '₫' : 'Miễn phí' ?>
+                                        <?= $course->price > 0 ? number_format($course->price, 0, ',', '.') . '₫' : 'Miễn phí' ?>
                                     </span>
                                 </div>
-                                <a href="/course/<?= $course['id'] ?>" class="btn btn-sm btn-primary">Xem chi tiết</a>
+                                <a href="/course/<?= $course->id ?>" class="btn btn-sm btn-primary">Xem chi tiết</a>
                             </div>
                         </div>
                     </div>

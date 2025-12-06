@@ -1,30 +1,37 @@
 <?php
 require_once __DIR__ . '/../models/Course.php';
 require_once __DIR__ . '/../models/Category.php';
+require_once __DIR__ . '/../models/User.php'; // Add User model include
 require_once __DIR__ . '/../viewmodels/HomeViewModel.php';
 
 use Lib\Controller;
 use ViewModels\HomeIndexViewModel;
+use ViewModels\FeaturedCourse;
 
 class HomeController extends Controller
 {
     public function index(): void
     {
-        $featuredCourses = Course::query()
-            ->select(['c.*', 'cat.name as category_name', 'u.fullname as instructor_name'])
-            ->table('courses c')
-            ->leftJoin('categories cat', 'c.category_id', '=', 'cat.id')
-            ->leftJoin('users u', 'c.instructor_id', '=', 'u.id')
-            ->where('c.status', 'approved')
-            ->orderBy('c.created_at', 'DESC')
-            ->limit(6)
-            ->get();
+        // Aliases for tables
+        $c = 'c';
+        $cat = 'cat';
+        $u = 'u';
 
-        $featuredCourses = array_map(fn($c) => $c->toArray(), $featuredCourses);
+        $featuredCourses = Course::query()
+            ->select([
+                "$c.*", 
+                "$cat." . Category::NAME . ' as category_name', 
+                "$u." . User::FULLNAME . ' as instructor_name'
+            ])
+            ->table(Course::TABLE . " $c")
+            ->leftJoin(Category::TABLE . " $cat", "$c." . Course::CATEGORY_ID, '=', "$cat." . Category::ID)
+            ->leftJoin(User::TABLE . " $u", "$c." . Course::INSTRUCTOR_ID, '=', "$u." . User::ID)
+            ->where("$c." . Course::STATUS, 'approved')
+            ->orderBy("$c." . Course::CREATED_AT, 'DESC')
+            ->limit(6)
+            ->get(FeaturedCourse::class);
 
         $categories = Category::all();
-        $categories = array_map(fn($c) => $c->toArray(), $categories);
-
 
         $viewModel = new HomeIndexViewModel(
             title: "Trang chủ - Feetcode",
