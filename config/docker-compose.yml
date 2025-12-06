@@ -1,0 +1,16 @@
+services:
+  db:
+    image: mysql:latest
+    container_name: mysql-dev
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: 'onlinecourse'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: always
+
+volumes:
+  mysql_data:
+
