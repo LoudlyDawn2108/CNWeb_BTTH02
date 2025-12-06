@@ -1,10 +1,17 @@
-﻿<?php
+<?php
+
 use Lib\Controller;
+use ViewModels\HomeIndexViewModel;
 
 class HomeController extends Controller {
-    public function index() {
-        // Gọi view home/index.php
-        echo '<h1>Trang Chủ - Chạy thành công!</h1>'; 
+    public function index(): void
+    {
+        $featuredCourses = [];
+        $categories = [];
+        $viewModel = new HomeIndexViewModel(
+            title: ""
+        );
+        
+        $this->render('home/index', $viewModel); 
     }
 }
-?>

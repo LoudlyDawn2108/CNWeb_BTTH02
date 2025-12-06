@@ -1,6 +1,10 @@
 <?php
 
-namespace Lib;
+namespace Functional;
+
+use ArrayIterator;
+use Closure;
+use Traversable;
 
 class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
     protected array $items;
@@ -44,7 +48,7 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
     /**
      * Filter the collection using the given callback.
      */
-    public function filter(callable $callback = null): self {
+    public function filter(?callable $callback = null): self {
         if ($callback) {
             return new self(array_values(array_filter($this->items, $callback)));
         }
@@ -92,7 +96,7 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
     /**
      * Get the first item from the collection.
      */
-    public function first(callable $callback = null, $default = null) {
+    public function first(?callable $callback = null, $default = null) {
         if (is_null($callback)) {
             if (empty($this->items)) {
                 return $default;
@@ -112,7 +116,7 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
     /**
      * Get the last item from the collection.
      */
-    public function last(callable $callback = null, $default = null) {
+    public function last(?callable $callback = null, $default = null) {
         if (is_null($callback)) {
             if (empty($this->items)) {
                 return $default;
@@ -134,7 +138,7 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
      * Check if the collection contains a given value.
      */
     public function contains($value): bool {
-        if ($value instanceof \Closure) {
+        if ($value instanceof Closure) {
             return !is_null($this->first($value));
         }
         return in_array($value, $this->items, true);
@@ -143,7 +147,7 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
     /**
      * Sort the collection.
      */
-    public function sort(callable $callback = null): self {
+    public function sort(?callable $callback = null): self {
         $items = $this->items;
         if ($callback) {
             usort($items, $callback);
@@ -175,8 +179,8 @@ class Collection implements \Countable, \IteratorAggregate, \JsonSerializable {
         return empty($this->items);
     }
 
-    public function getIterator(): \Traversable {
-        return new \ArrayIterator($this->items);
+    public function getIterator(): Traversable {
+        return new ArrayIterator($this->items);
     }
 
     public function jsonSerialize(): mixed {

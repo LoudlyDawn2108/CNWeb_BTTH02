@@ -9,4 +9,3 @@ class AuthController extends Controller {
         // Xử lý POST login
     }
 }
-?>

@@ -13,6 +13,17 @@ spl_autoload_register(function ($class) {
     // Handle namespaced classes (e.g., Functional\Option)
     $classPath = str_replace('\\', '/', $class);
 
+    // Fix for Lib namespace mapping to lib directory
+    if (strpos($class, 'Lib\\') === 0) {
+        $libClassPath = str_replace('Lib\\', '', $class); // Remove 'Lib\' prefix
+        $libClassPath = str_replace('\\', '/', $libClassPath);
+        $libFile = BASE_PATH . '/lib/' . $libClassPath . '.php';
+        if (file_exists($libFile)) {
+            require_once $libFile;
+            return;
+        }
+    }
+
     $paths = [
         BASE_PATH . '/controllers/' . $class . '.php',
         BASE_PATH . '/models/' . $class . '.php',

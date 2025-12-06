@@ -3,16 +3,18 @@
 namespace Lib;
 
 use Functional\Option;
+use JetBrains\PhpStorm\NoReturn;
 
 abstract class Controller {
     
     /**
      * Render a view with a ViewModel
      */
-    protected function render(string $viewPath, \Lib\ViewModel $viewModel) {
+    protected function render(string $viewPath, ViewModel $viewModel): void
+    {
         // Start buffering for the main content
         ob_start();
-        $viewFile = BASE_PATH . "/views/{$viewPath}.php";
+        $viewFile = BASE_PATH . "/views/$viewPath.php";
         if (file_exists($viewFile)) {
             // Pass $viewModel directly to the view script
             require_once $viewFile;
@@ -32,7 +34,9 @@ abstract class Controller {
     /**
      * Redirect helper
      */
-    protected function redirect(string $url) {
+    #[NoReturn]
+    protected function redirect(string $url): void
+    {
         header("Location: $url");
         exit;
     }
@@ -41,7 +45,8 @@ abstract class Controller {
      * Authentication Middleware
      * @param array|int $roles Single role (int) or array of roles
      */
-    protected function requireRole(int|array $roles) {
+    protected function requireRole(int|array $roles): void
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }

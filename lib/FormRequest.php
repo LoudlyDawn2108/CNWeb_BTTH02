@@ -2,6 +2,10 @@
 
 namespace Lib;
 
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
+
 abstract class FormRequest {
     
     public function __construct() {
@@ -21,8 +25,8 @@ abstract class FormRequest {
     }
 
     private function castProperties() {
-        $reflection = new \ReflectionClass($this);
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        $reflection = new ReflectionClass($this);
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isInitialized($this)) {
                 continue;
             }
@@ -33,7 +37,7 @@ abstract class FormRequest {
             }
             
             $value = $property->getValue($this);
-            if ($value !== null && $type instanceof \ReflectionNamedType) {
+            if ($value !== null && $type instanceof ReflectionNamedType) {
                 $typeName = $type->getName();
                 if ($typeName === 'int') {
                     $property->setValue($this, (int)$value);
