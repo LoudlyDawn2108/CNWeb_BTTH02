@@ -87,6 +87,65 @@ class AdminController extends Controller
     }
 
     /**
+     * Toggle User Status (Active/Inactive)
+     */
+    public function toggleUserStatus(int $id): void
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            // Get the status from request body
+            $input = json_decode(file_get_contents('php://input'), true);
+            $newStatus = isset($input['status']) ? (int)$input['status'] : null;
+            
+            if ($newStatus === null || !in_array($newStatus, [0, 1])) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Trạng thái không hợp lệ'
+                ]);
+                return;
+            }
+            
+            // Find user
+            $user = User::find($id);
+            
+            if (!$user) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Không tìm thấy người dùng'
+                ]);
+                return;
+            }
+            
+            // Prevent admin from deactivating themselves
+            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $id && $newStatus == 0) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Bạn không thể vô hiệu hóa tài khoản của chính mình'
+                ]);
+                return;
+            }
+            
+            // Update status
+            $user->status = $newStatus;
+            $user->save();
+            
+            $_SESSION['success'] = 'Cập nhật trạng thái người dùng thành công';
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Cập nhật thành công'
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void

@@ -70,6 +70,7 @@ try {
     // Admin Dashboard
     $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
     $router->get('/admin/users', [AdminController::class, 'manageUsers']);
+    $router->post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus']);
 
 
     // Dispatch
