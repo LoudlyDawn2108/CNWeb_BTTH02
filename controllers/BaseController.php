@@ -43,7 +43,10 @@ abstract class BaseController {
         }
 
         if ($viewModel) {
-            extract(['model' => $viewModel]);
+            extract([
+                'model' => $viewModel,      // ← Tên ngắn gọn
+                'viewModel' => $viewModel   // ← Tên rõ ràng
+            ]);
         }
 
         require $viewPath;
