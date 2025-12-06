@@ -60,18 +60,7 @@ class QueryBuilder {
     /**
      * Add a WHERE clause
      */
-    public function where(string|callable $column, mixed $operator = null, mixed $value = null): self {
-        // Handle closure for nested WHERE clauses
-        if (is_callable($column)) {
-            $nestedQuery = new static($this->pdo);
-            $column($nestedQuery);
-            if (!empty($nestedQuery->wheres)) {
-                $this->wheres[] = '(' . implode(' AND ', $nestedQuery->wheres) . ')';
-                $this->params = array_merge($this->params, $nestedQuery->params);
-            }
-            return $this;
-        }
-
+    public function where(string $column, mixed $operator, mixed $value = null): self {
         if ($value === null) {
             $value = $operator;
             $operator = '=';
@@ -82,34 +71,6 @@ class QueryBuilder {
         $this->wheres[] = "{$column} {$operator} {$paramName}";
         $this->params[$paramName] = $value;
         
-        return $this;
-    }
-
-    /**
-     * Add a WHERE LIKE clause
-     */
-    public function whereLike(string $column, string $value): self {
-        $paramName = ':like_' . count($this->params) . '_' . preg_replace('/[^a-zA-Z0-9]/', '', $column);
-        $this->wheres[] = "{$column} LIKE {$paramName}";
-        $this->params[$paramName] = $value;
-        return $this;
-    }
-
-    /**
-     * Add an OR WHERE LIKE clause
-     */
-    public function orWhereLike(string $column, string $value): self {
-        $paramName = ':like_' . count($this->params) . '_' . preg_replace('/[^a-zA-Z0-9]/', '', $column);
-        
-        // Replace the last "AND" with "OR" if there are existing wheres
-        if (!empty($this->wheres)) {
-            $lastIndex = count($this->wheres) - 1;
-            $this->wheres[] = "OR {$column} LIKE {$paramName}";
-        } else {
-            $this->wheres[] = "{$column} LIKE {$paramName}";
-        }
-        
-        $this->params[$paramName] = $value;
         return $this;
     }
 
@@ -293,17 +254,6 @@ class QueryBuilder {
         if (empty($this->wheres)) {
             return '';
         }
-        // Join wheres, but handle OR clauses
-        $whereStr = '';
-        foreach ($this->wheres as $index => $where) {
-            if ($index === 0) {
-                $whereStr .= $where;
-            } elseif (str_starts_with($where, 'OR ')) {
-                $whereStr .= ' ' . $where;
-            } else {
-                $whereStr .= ' AND ' . $where;
-            }
-        }
-        return ' WHERE ' . $whereStr;
+        return ' WHERE ' . implode(' AND ', $this->wheres);
     }
 }
