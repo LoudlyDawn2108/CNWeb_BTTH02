@@ -1,7 +1,8 @@
 <?php
-require_once __DIR__ . '/../Models/Course.php';
-require_once __DIR__ . '/../Models/Category.php';
-require_once __DIR__ . '/../Models/User.php'; // Add User model include
+
+require_once __DIR__ . '/../models/Course.php';
+require_once __DIR__ . '/../models/Category.php';
+require_once __DIR__ . '/../models/User.php'; // Add User model include
 require_once __DIR__ . '/../viewmodels/HomeViewModel.php';
 
 use Lib\Controller;

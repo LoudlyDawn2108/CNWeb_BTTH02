@@ -1,9 +1,11 @@
 <?php
+
 namespace Controllers;
 
 use Functional\Collection;
 use Functional\Option;
 use Functional\Result;
+use JetBrains\PhpStorm\NoReturn;
 use Lib\Controller;
 use Models\Course;
 use Models\Category;
@@ -12,15 +14,19 @@ use ViewModels\Instructor\CourseFormViewModel;
 use ViewModels\Instructor\CourseManageViewModel;
 use ViewModels\Instructor\InstructorDashboardViewModel;
 
-class InstructorController extends Controller {
+class InstructorController extends Controller
+{
 
     public function dashboard(): void
     {
         $this->user()->match(
-            function($user) {
+            function ($user) {
                 $courseModel = new Course();
                 // Lấy dữ liệu thô (Array) từ Model
                 $rawCourses = $courseModel->getByInstructor($user['id']);
+
+                // DEBUG
+                error_log("Raw courses: " . print_r($rawCourses, true));
 
                 // 2. BIẾN HÌNH: Ép kiểu Array thành Collection
                 // (Giả sử class Collection của bạn có hàm static make())
@@ -31,13 +37,34 @@ class InstructorController extends Controller {
 
                 $this->render('instructor/dashboard', $viewModel);
             },
-            function() {
+            function () {
                 $this->redirect('/auth/login');
             }
         );
     }
 
-    public function createForm() {
+    public function myCourses(): void
+    {
+        $this->user()->match(
+            function ($user) {
+                $courseModel = new Course();
+                $rawCourses = $courseModel->getByInstructor($user['id']);
+
+                $coursesCollection = Collection::make($rawCourses);
+                $viewModel = new InstructorDashboardViewModel($coursesCollection);
+
+                // Render view riêng cho trang "Khóa học của tôi"
+                $this->render('instructor/courses/index', $viewModel);
+            },
+            function () {
+                $this->redirect('/auth/login');
+            }
+        );
+    }
+
+
+    public function createForm(): void
+    {
         $categoryModel = new Category();
         $categories = $categoryModel->getAll();
 
@@ -48,46 +75,60 @@ class InstructorController extends Controller {
         $this->render('instructor/courses/create', $viewModel);
     }
 
+    #[NoReturn]
     public function storeCourse() {
+        error_log("=== START CREATE COURSE ===");
+
         $this->user()->match(
             function($user) {
+                error_log("User ID: " . $user['id']);
+
                 $courseModel = new Course();
-                $imageResult = $this->handleImageUpload($_FILES['thumbnail'] ?? null);
+                $imageResult = $this->handleImageUpload($_FILES['image'] ?? null);
 
                 $data = [
                     'title' => $this->getPost('title'),
                     'description' => $this->getPost('description'),
-                    'thumbnail' => $imageResult->getOrElse(''),
+                    'image' => $imageResult->getOrElse(''),
                     'instructor_id' => $user['id'],
                     'category_id' => $this->getPost('category_id'),
                     'level' => $this->getPost('level'),
-                    'price' => $this->getPost('price'),
-                    'is_published' => 0
+                    'price' => $this->getPost('price')
                 ];
 
-                $courseModel->createCourse($data)->match( // ← Đổi thành createCourse
+                error_log("Data to save: " . print_r($data, true));
+
+                $courseModel->createCourse($data)->match(
                     function($courseId) {
+                        error_log("✅ SUCCESS: Course ID = $courseId");
                         $this->setSuccessMessage('Khóa học đã được tạo thành công');
                         $this->redirect('/instructor/dashboard');
                     },
                     function() {
+                        error_log("❌ FAILED: Cannot create course");
                         $this->setErrorMessage('Không thể tạo khóa học');
                         $this->redirect('/instructor/courses/create');
                     }
                 );
             },
-            fn() => $this->redirect('/auth/login')
+            function() {
+                error_log("❌ User not logged in");
+                $this->redirect('/auth/login');
+            }
         );
     }
 
-    public function editForm($id) {
+
+
+    public function editForm($id)
+    {
         $this->user()->match(
-            function($user) use ($id) {
+            function ($user) use ($id) {
                 $courseModel = new Course();
                 $categoryModel = new Category();
 
                 $courseModel->getById($id)->match(
-                    function($course) use ($user, $categoryModel) {
+                    function ($course) use ($user, $categoryModel) {
                         if ($course['instructor_id'] != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
@@ -100,7 +141,7 @@ class InstructorController extends Controller {
                         );
                         $this->render('instructor/courses/create', $viewModel);
                     },
-                    function() {
+                    function () {
                         $this->setErrorMessage('Không tìm thấy khóa học');
                         $this->redirect('/instructor/dashboard');
                     }
@@ -110,13 +151,14 @@ class InstructorController extends Controller {
         );
     }
 
-    public function updateCourse($id) {
+    public function updateCourse($id)
+    {
         $this->user()->match(
-            function($user) use ($id) {
+            function ($user) use ($id) {
                 $courseModel = new Course();
 
                 $courseModel->getById($id)->match(
-                    function($course) use ($user, $courseModel, $id) {
+                    function ($course) use ($user, $courseModel, $id) {
                         if ($course['instructor_id'] != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
@@ -139,17 +181,17 @@ class InstructorController extends Controller {
                         );
 
                         $courseModel->updateCourse($id, $data)->match( // ← Đổi thành updateCourse
-                            function() use ($id) {
+                            function () use ($id) {
                                 $this->setSuccessMessage('Khóa học đã được cập nhật');
                                 $this->redirect("/instructor/course/$id/manage");
                             },
-                            function() use ($id) {
+                            function () use ($id) {
                                 $this->setErrorMessage('Không thể cập nhật khóa học');
                                 $this->redirect("/instructor/course/$id/edit");
                             }
                         );
                     },
-                    function() {
+                    function () {
                         $this->setErrorMessage('Không tìm thấy khóa học');
                         $this->redirect('/instructor/dashboard');
                     }
@@ -159,14 +201,15 @@ class InstructorController extends Controller {
         );
     }
 
-    public function manageCourse($id) {
+    public function manageCourse($id)
+    {
         $this->user()->match(
-            function($user) use ($id) {
+            function ($user) use ($id) {
                 $courseModel = new Course();
                 $lessonModel = new Lesson();
 
                 $courseModel->getById($id)->match(
-                    function($course) use ($user, $lessonModel) {
+                    function ($course) use ($user, $lessonModel) {
                         if ($course['instructor_id'] != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
@@ -177,7 +220,7 @@ class InstructorController extends Controller {
                         $viewModel = new CourseManageViewModel($course, $lessons);
                         $this->render('instructor/course/manage', $viewModel);
                     },
-                    function() {
+                    function () {
                         $this->setErrorMessage('Không tìm thấy khóa học');
                         $this->redirect('/instructor/dashboard');
                     }
@@ -187,13 +230,14 @@ class InstructorController extends Controller {
         );
     }
 
-    public function deleteCourse($id) {
+    public function deleteCourse($id)
+    {
         $this->user()->match(
-            function($user) use ($id) {
+            function ($user) use ($id) {
                 $courseModel = new Course();
 
                 $courseModel->getById($id)->match(
-                    function($course) use ($user, $courseModel, $id) {
+                    function ($course) use ($user, $courseModel, $id) {
                         if ($course['instructor_id'] != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
@@ -206,7 +250,7 @@ class InstructorController extends Controller {
                         }
                         $this->redirect('/instructor/dashboard');
                     },
-                    function() {
+                    function () {
                         $this->setErrorMessage('Không tìm thấy khóa học');
                         $this->redirect('/instructor/dashboard');
                     }
@@ -216,41 +260,42 @@ class InstructorController extends Controller {
         );
     }
 
-    public function togglePublish($id) {
-        $this->user()->match(
-            function($user) use ($id) {
-                $courseModel = new Course();
+//    public function togglePublish($id) {
+//        $this->user()->match(
+//            function($user) use ($id) {
+//                $courseModel = new Course();
+//
+//                $courseModel->getById($id)->match(
+//                    function($course) use ($user, $courseModel, $id) {
+//                        if ($course['instructor_id'] != $user['id']) {
+//                            http_response_code(403);
+//                            die('Không có quyền truy cập');
+//                        }
+//
+//                        $courseModel->togglePublish($id)->match(
+//                            function() use ($id) {
+//                                $this->setSuccessMessage('Đã cập nhật trạng thái khóa học');
+//                                $this->redirect("/instructor/course/$id/manage");
+//                            },
+//                            function() use ($id) {
+//                                $this->setErrorMessage('Không thể cập nhật');
+//                                $this->redirect("/instructor/course/$id/manage");
+//                            }
+//                        );
+//                    },
+//                    function() {
+//                        $this->setErrorMessage('Không tìm thấy khóa học');
+//                        $this->redirect('/instructor/dashboard');
+//                    }
+//                );
+//            },
+//            fn() => $this->redirect('/auth/login')
+//        );
+//    }
 
-                $courseModel->getById($id)->match(
-                    function($course) use ($user, $courseModel, $id) {
-                        if ($course['instructor_id'] != $user['id']) {
-                            http_response_code(403);
-                            die('Không có quyền truy cập');
-                        }
-
-                        $courseModel->togglePublish($id)->match(
-                            function() use ($id) {
-                                $this->setSuccessMessage('Đã cập nhật trạng thái khóa học');
-                                $this->redirect("/instructor/course/$id/manage");
-                            },
-                            function() use ($id) {
-                                $this->setErrorMessage('Không thể cập nhật');
-                                $this->redirect("/instructor/course/$id/manage");
-                            }
-                        );
-                    },
-                    function() {
-                        $this->setErrorMessage('Không tìm thấy khóa học');
-                        $this->redirect('/instructor/dashboard');
-                    }
-                );
-            },
-            fn() => $this->redirect('/auth/login')
-        );
-    }
-
-    private function handleImageUpload(?array $file): Result {
-        return Result::try(function() use ($file) {
+    private function handleImageUpload(?array $file): Result
+    {
+        return Result::try(function () use ($file) {
             if (empty($file['name'])) {
                 throw new \Exception('No file uploaded');
             }

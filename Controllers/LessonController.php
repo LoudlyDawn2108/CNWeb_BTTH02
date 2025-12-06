@@ -24,7 +24,8 @@ class LessonController extends Controller {
     }
 
     // 2. Lưu bài học (Sửa lại theo Lib\Model)
-    public function store($courseId) {
+    public function store($courseId): void
+    {
         $data = [
             'course_id' => $courseId,
             'title' => $_POST['title'],

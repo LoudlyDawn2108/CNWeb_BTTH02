@@ -54,7 +54,7 @@ class Category extends Model {
             SELECT c.*,
                    COUNT(co.id) as course_count
             FROM categories c
-            LEFT JOIN courses co ON c.id = co.category_id AND co.is_published = 1
+            LEFT JOIN courses co ON c.id = co.category_id
             GROUP BY c.id
             ORDER BY c.name ASC
         ");
@@ -151,7 +151,7 @@ class Category extends Model {
             SELECT c.*,
                    COUNT(co.id) as course_count
             FROM categories c
-            INNER JOIN courses co ON c.id = co.category_id AND co.is_published = 1
+            INNER JOIN courses co ON c.id = co.category_id
             GROUP BY c.id
             HAVING course_count > 0
             ORDER BY c.name ASC

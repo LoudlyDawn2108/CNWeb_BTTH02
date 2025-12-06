@@ -8,6 +8,19 @@ use Controllers\LessonController;
 
 session_start();
 
+// =================================================================
+// 🔥 AUTO LOGIN (CHẾ ĐỘ TEST CHO NGƯỜI SỐ 3)
+// Xóa đoạn này khi nộp bài hoặc khi ghép code với nhóm
+// =================================================================
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['user_id'] = 999;        // Phải trùng với ID trong Database ở Bước 1
+    $_SESSION['role'] = 1;             // 1 = Giảng viên
+    $_SESSION['fullname'] = 'GV Test'; // Tên hiển thị trên menu
+    $_SESSION['email'] = 'gv@test.com';
+    $_SESSION['username'] = 'test_gv';
+}
+// =================================================================
+
 // Define base path
 define('BASE_PATH', __DIR__);
 
@@ -16,9 +29,8 @@ spl_autoload_register(function ($class) {
     // Handle namespaced classes (e.g., Functional\Option)
     $classPath = str_replace('\\', '/', $class);
 
-    // Fix for Lib namespace mapping to lib directory
     if (str_starts_with($class, 'Lib\\')) {
-        $libClassPath = str_replace('Lib\\', '', $class); // Remove 'Lib\' prefix
+        $libClassPath = str_replace('Lib\\', '', $class);
         $libClassPath = str_replace('\\', '/', $libClassPath);
         $libFile = BASE_PATH . '/lib/' . $libClassPath . '.php';
         if (file_exists($libFile)) {
@@ -26,6 +38,49 @@ spl_autoload_register(function ($class) {
             return;
         }
     }
+
+    // Xử lý namespace Controllers\
+    if (str_starts_with($class, 'Controllers\\')) {
+        $className = str_replace('Controllers\\', '', $class);
+        $file = BASE_PATH . '/Controllers/' . $className . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+
+    // Xử lý namespace Models\
+    if (str_starts_with($class, 'Models\\')) {
+        $className = str_replace('Models\\', '', $class);
+        $file = BASE_PATH . '/Models/' . $className . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+
+    // Xử lý namespace ViewModels\
+    if (str_starts_with($class, 'ViewModels\\')) {
+        $classPath = str_replace('ViewModels\\', '', $class);
+        $classPath = str_replace('\\', '/', $classPath);
+        $file = BASE_PATH . '/ViewModels/' . $classPath . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+
+    // Xử lý namespace Functional\
+    if (str_starts_with($class, 'Functional\\')) {
+        $className = str_replace('Functional\\', '', $class);
+        $file = BASE_PATH . '/lib/Functional/' . $className . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+    // Fallback cho các class không có namespace
+    $classPath = str_replace('\\', '/', $class);
 
     $paths = [
         BASE_PATH . '/Controllers/' . $class . '.php',
@@ -42,6 +97,8 @@ spl_autoload_register(function ($class) {
         }
     }
 });
+
+// Sau spl_autoload_register(...)
 
 // Get the request URI
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -76,12 +133,12 @@ try {
     $router->get('/instructor/my-courses', [InstructorController::class, 'myCourses']);
 
     // 2. Quản lý Khóa học (Courses)
-    $router->get('/instructor/courses/create', [InstructorController::class, 'create']); // Form tạo
-    $router->post('/instructor/courses/store', [InstructorController::class, 'store']);  // Lưu tạo
+    $router->get('/instructor/courses/create', [InstructorController::class, 'createForm']); // Form tạo
+    $router->post('/instructor/courses/store', [InstructorController::class, 'storeCourse']);  // Lưu tạo
 
-    $router->get('/instructor/courses/{id}/edit', [InstructorController::class, 'edit']);   // Form sửa
-    $router->post('/instructor/courses/{id}/update', [InstructorController::class, 'update']); // Lưu sửa
-    $router->post('/instructor/courses/{id}/delete', [InstructorController::class, 'delete']); // Xóa
+    $router->get('/instructor/courses/{id}/edit', [InstructorController::class, 'editForm']);   // Form sửa
+    $router->post('/instructor/courses/{id}/update', [InstructorController::class, 'updateCourse']); // Lưu sửa
+    $router->post('/instructor/courses/{id}/delete', [InstructorController::class, 'deleteCourse']); // Xóa
 
     $router->get('/instructor/courses/{id}/manage', [InstructorController::class, 'manageCourse']); // Trang chi tiết khóa học
 

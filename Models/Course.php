@@ -45,8 +45,8 @@ class Course extends Model {
     // 2. Không cần khai báo fillable nếu Lib\Model chưa hỗ trợ lọc
     // Nhưng cứ để đây để sau này nâng cấp base model
     protected array $fillable = [
-        'title', 'description', 'thumbnail', 'instructor_id',
-        'category_id', 'level', 'price', 'is_published'
+        'title', 'description', 'instructor_id',
+        'category_id', 'level', 'price'
     ];
 
     public static function getWithDetails($id) {
@@ -100,29 +100,29 @@ class Course extends Model {
     /**
      * Toggle Publish (Hàm nghiệp vụ riêng)
      */
-    public function togglePublish(int $id): Option {
-        try {
-            // 1. Tìm khóa học
-            $course = self::find($id);
-
-            if (!$course) {
-                return Option::none();
-            }
-
-            // 2. Đổi trạng thái (0 -> 1 hoặc 1 -> 0)
-            // Lưu ý: Cần ép kiểu về int để đảm bảo logic
-            $course->is_published = $course->is_published == 1 ? 0 : 1;
-
-            // 3. Lưu lại
-            if ($course->save()) {
-                return Option::some(true); // Trả về Option để Controller match() được
-            }
-
-            return Option::none();
-        } catch (\Throwable $e) {
-            return Option::none();
-        }
-    }
+//    public function togglePublish(int $id): Option {
+//        try {
+//            // 1. Tìm khóa học
+//            $course = self::find($id);
+//
+//            if (!$course) {
+//                return Option::none();
+//            }
+//
+//            // 2. Đổi trạng thái (0 -> 1 hoặc 1 -> 0)
+//            // Lưu ý: Cần ép kiểu về int để đảm bảo logic
+//            $course->is_published = $course->is_published == 1 ? 0 : 1;
+//
+//            // 3. Lưu lại
+//            if ($course->save()) {
+//                return Option::some(true); // Trả về Option để Controller match() được
+//            }
+//
+//            return Option::none();
+//        } catch (\Throwable $e) {
+//            return Option::none();
+//        }
+//    }
     public function createCourse(array $data): Option {
         try {
             // 1. Gọi hàm create của Lib\Model (trả về Object)
@@ -177,4 +177,3 @@ class Course extends Model {
         }
     }
 }
-

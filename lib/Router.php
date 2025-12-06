@@ -69,6 +69,7 @@ class Router {
                                 }
                             }
                         }
+
                         $controller->$action(...$args);
                         return;
                     }
