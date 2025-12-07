@@ -14,13 +14,6 @@ use ViewModels\AuthLoginViewModel;
                             <i class="bi bi-box-arrow-in-right"></i> <?= $viewModel->title ?>
                         </h3>
 
-                        <?php if ($viewModel->modelState->hasError('global')): ?>
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <?= htmlspecialchars($viewModel->modelState->getFirstError('global')) ?>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        <?php endif; ?>
-
                         <form action="/auth/login" method="POST">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Tên đăng nhập hoặc Email</label>

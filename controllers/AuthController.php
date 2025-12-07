@@ -76,7 +76,7 @@ class AuthController extends Controller {
             }
 
             // Add model error for invalid credentials
-            $viewModel->modelState->addError('global', 'Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị vô hiệu hóa.');
+            $viewModel->modelState->addError('username', 'Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị vô hiệu hóa.');
         }
 
         // If we got here, something failed, redisplay form
@@ -121,7 +121,7 @@ class AuthController extends Controller {
                 $this->redirect('/auth/login');
 
             } catch (Exception $e) {
-                $viewModel->modelState->addError('global', 'Có lỗi xảy ra: ' . $e->getMessage());
+                $this->setErrorMessage('Có lỗi xảy ra: ' . $e->getMessage());
             }
         }
 
