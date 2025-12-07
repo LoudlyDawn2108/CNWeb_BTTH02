@@ -306,6 +306,57 @@ class AdminController extends Controller
     }
 
     /**
+     * Delete Category - Remove category if not in use
+     */
+    public function deleteCategory(int $id): void
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            // Find category
+            $category = Category::find($id);
+            
+            if (!$category) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Kh\u00f4ng t\u00ecm th\u1ea5y danh m\u1ee5c'
+                ]);
+                return;
+            }
+            
+            // Check if category has courses
+            $courseCount = Course::query()
+                ->where('category_id', $id)
+                ->count();
+            
+            if ($courseCount > 0) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => "Kh\u00f4ng th\u1ec3 x\u00f3a danh m\u1ee5c n\u00e0y v\u00ec \u0111ang c\u00f3 {$courseCount} kh\u00f3a h\u1ecdc s\u1eed d\u1ee5ng"
+                ]);
+                return;
+            }
+            
+            // Delete category
+            $categoryName = $category->name;
+            $category->delete();
+            
+            $_SESSION['success'] = "\u0110\u00e3 x\u00f3a danh m\u1ee5c '{$categoryName}' th\u00e0nh c\u00f4ng";
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'X\u00f3a danh m\u1ee5c th\u00e0nh c\u00f4ng'
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void
