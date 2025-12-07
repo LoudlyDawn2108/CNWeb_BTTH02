@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../models/Enrollment.php';
 require_once __DIR__ . '/../viewmodels/StudentDashboardViewModel.php';
+require_once __DIR__ . '/../viewmodels/MyCoursesViewModel.php';
 require_once __DIR__ . '/../models/Course.php';
 require_once __DIR__ . '/../models/User.php';
 
@@ -13,6 +14,10 @@ use Lib\Controller;
 use Functional\Option;
 use Functional\Result;
 use ViewModels\StudentDashboardViewModel;
+use ViewModels\MyCoursesViewModel;
+use Models\Course;
+use Models\Enrollment;
+use Models\User;
 
 class EnrollmentController extends Controller {
 
@@ -145,6 +150,29 @@ class EnrollmentController extends Controller {
      */
     public function myCourses() {
         $this->requireRole(User::ROLE_STUDENT);
+
+        $studentId = $_SESSION['user_id'];
+        
+        $enrollments = Enrollment::query()
+            ->select(['e.*', 'c.title as course_title', 'c.image as course_image', 
+                      'c.level', 'c.duration_weeks', 'cat.name as category_name',
+                      'u.fullname as instructor_name'])
+            ->table('enrollments e')
+            ->leftJoin('courses c', 'e.course_id', '=', 'c.id')
+            ->leftJoin('categories cat', 'c.category_id', '=', 'cat.id')
+            ->leftJoin('users u', 'c.instructor_id', '=', 'u.id')
+            ->where('e.student_id', $studentId)
+            ->orderBy('e.enrolled_date', 'DESC')
+            ->get();
+            
+        $enrollments = array_map(fn($e) => $e->toArray(), $enrollments);
+
+        $viewModel = new MyCoursesViewModel(
+            title: 'Khóa học của tôi - Online Course',
+            enrollments: $enrollments
+        );
+
+        $this->render('student/my_courses', $viewModel);
     }
 
     /**
