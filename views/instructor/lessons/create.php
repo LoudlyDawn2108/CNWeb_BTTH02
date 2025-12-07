@@ -27,13 +27,29 @@
                     </h6>
                 </div>
                 <div class="card-body p-4">
+                    
+                    <?php if (!$viewModel->modelState->isValid): ?>
+                    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Vui lòng kiểm tra lại thông tin:</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <?php endif; ?>
+                    
                     <form action="<?= $viewModel->actionUrl ?>" method="POST">
 
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Tên bài học <span class="text-danger">*</span></label>
-                            <input type="text" name="title" class="form-control form-control-lg rounded-3" required
+                            <input type="text" 
+                                   name="title" 
+                                   class="form-control form-control-lg rounded-3 <?= $viewModel->modelState->hasError('title') ? 'is-invalid' : '' ?>"
                                    value="<?= htmlspecialchars($viewModel->getLessonValue('title')) ?>"
                                    placeholder="Ví dụ: Bài 1 - Giới thiệu về PHP">
+                            <?php if ($viewModel->modelState->hasError('title')): ?>
+                                <div class="invalid-feedback">
+                                    <?= htmlspecialchars($viewModel->modelState->getFirstError('title')) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="mb-4">
