@@ -5,7 +5,7 @@ use ViewModels\AuthLoginViewModel;
 
 ?>
 <div class="d-flex align-items-center justify-content-center flex-grow-1">
-    <div class="container">
+    <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card shadow">
@@ -14,14 +14,39 @@ use ViewModels\AuthLoginViewModel;
                             <i class="bi bi-box-arrow-in-right"></i> <?= $viewModel->title ?>
                         </h3>
 
+                        <?php if ($viewModel->modelState->hasError('global')): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <?= htmlspecialchars($viewModel->modelState->getFirstError('global')) ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        <?php endif; ?>
+
                         <form action="/auth/login" method="POST">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Tên đăng nhập hoặc Email</label>
-                                <input type="text" class="form-control" id="username" name="username" required autofocus>
+                                <input type="text" 
+                                       class="form-control <?= $viewModel->modelState->hasError('username') ? 'is-invalid' : '' ?>" 
+                                       id="username" 
+                                       name="username" 
+                                       value="<?= htmlspecialchars($viewModel->username) ?>"
+                                       autofocus>
+                                <?php if ($viewModel->modelState->hasError('username')): ?>
+                                    <div class="invalid-feedback">
+                                        <?= htmlspecialchars($viewModel->modelState->getFirstError('username')) ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Mật khẩu</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
+                                <input type="password" 
+                                       class="form-control <?= $viewModel->modelState->hasError('password') ? 'is-invalid' : '' ?>" 
+                                       id="password" 
+                                       name="password">
+                                <?php if ($viewModel->modelState->hasError('password')): ?>
+                                    <div class="invalid-feedback">
+                                        <?= htmlspecialchars($viewModel->modelState->getFirstError('password')) ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="remember" name="remember">

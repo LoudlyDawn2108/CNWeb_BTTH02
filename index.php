@@ -71,15 +71,6 @@ try {
     // Dispatch
     $router->dispatch($_SERVER['REQUEST_METHOD'], $requestUri);
 
-} catch (Lib\ValidationException $e) {
-    // Handle Validation Errors
-    $_SESSION['error'] = implode('<br>', $e->errors);
-    $_SESSION['old'] = $e->old;
-    
-    $referer = $_SERVER['HTTP_REFERER'] ?? '/';
-    header("Location: $referer");
-    exit;
-
 } catch (Exception $e) {
     http_response_code(500);
     echo 'Server Error: ' . $e->getMessage();
