@@ -9,7 +9,7 @@
                 <div class="card-header bg-gradient py-3 border-0 rounded-top-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold text-white">
-                            <i class="bi bi-mortarboard-fill me-2"></i><?= htmlspecialchars($viewModel->title) ?>
+                            <i class="bi bi-mortarboard-fill me-2"></i><?= htmlspecialchars($viewModel->pageTitle) ?>
                         </h5>
                         <a href="/instructor/dashboard" class="btn btn-light btn-sm rounded-pill px-3 shadow-sm">
                             <i class="bi bi-arrow-left me-1"></i> Quay lại
@@ -17,6 +17,15 @@
                     </div>
                 </div>
                 <div class="card-body p-4">
+                    
+                    <?php if (!$viewModel->modelState->isValid): ?>
+                    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Vui lòng kiểm tra lại thông tin:</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <?php endif; ?>
+                    
                     <form action="<?= $viewModel->actionUrl ?>" method="POST" enctype="multipart/form-data">
 
                         <!-- Thông tin cơ bản -->
@@ -27,15 +36,23 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Tên khóa học <span class="text-danger">*</span></label>
-                                <input type="text" name="title" class="form-control form-control-lg rounded-3" required
+                                <input type="text" 
+                                       name="title" 
+                                       class="form-control form-control-lg rounded-3 <?= $viewModel->modelState->hasError('title') ? 'is-invalid' : '' ?>"
                                        value="<?= htmlspecialchars($viewModel->getCourseValue('title')) ?>"
                                        placeholder="Ví dụ: Lập trình PHP căn bản">
+                                <?php if ($viewModel->modelState->hasError('title')): ?>
+                                    <div class="invalid-feedback">
+                                        <?= htmlspecialchars($viewModel->modelState->getFirstError('title')) ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Danh mục <span class="text-danger">*</span></label>
-                                    <select name="category_id" class="form-select rounded-3" required>
+                                    <select name="category_id" 
+                                            class="form-select rounded-3 <?= $viewModel->modelState->hasError('category_id') ? 'is-invalid' : '' ?>">
                                         <option value="">-- Chọn danh mục --</option>
                                         <?php foreach ($viewModel->getCategoryOptions() as $cat): ?>
                                             <option value="<?= $cat->id ?>" <?= $cat->selected ? 'selected' : '' ?>>
@@ -43,6 +60,11 @@
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
+                                    <?php if ($viewModel->modelState->hasError('category_id')): ?>
+                                        <div class="invalid-feedback">
+                                            <?= htmlspecialchars($viewModel->modelState->getFirstError('category_id')) ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Cấp độ</label>
@@ -128,12 +150,21 @@
                                 <i class="bi bi-text-paragraph me-2"></i>Nội dung khóa học
                             </h6>
 
+
                             <label class="form-label fw-semibold">Mô tả chi tiết <span class="text-danger">*</span></label>
-                            <textarea name="description" class="form-control rounded-3" rows="6" required
+                            <textarea name="description" 
+                                      class="form-control rounded-3 <?= $viewModel->modelState->hasError('description') ? 'is-invalid' : '' ?>" 
+                                      rows="6"
                                       placeholder="Giới thiệu về nội dung khóa học, những gì học viên sẽ học được..."><?= htmlspecialchars($viewModel->getCourseValue('description')) ?></textarea>
+                            <?php if ($viewModel->modelState->hasError('description')): ?>
+                                <div class="invalid-feedback">
+                                    <?= htmlspecialchars($viewModel->modelState->getFirstError('description')) ?>
+                                </div>
+                            <?php else: ?>
                             <div class="form-text">
                                 <i class="bi bi-info-circle me-1"></i>Mô tả chi tiết sẽ giúp học viên hiểu rõ hơn về khóa học
                             </div>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Nút submit -->
