@@ -7,17 +7,23 @@
 require_once __DIR__ . '/../models/Enrollment.php';
 require_once __DIR__ . '/../viewmodels/StudentDashboardViewModel.php';
 require_once __DIR__ . '/../viewmodels/MyCoursesViewModel.php';
+require_once __DIR__ . '/../viewmodels/CourseProgressViewModels.php';
+require_once __DIR__ . '/../viewmodels/LessonViewModel.php';
 require_once __DIR__ . '/../models/Course.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Lesson.php';
+require_once __DIR__ . '/../models/Material.php';
 
 use Lib\Controller;
-use Functional\Option;
-use Functional\Result;
 use ViewModels\StudentDashboardViewModel;
 use ViewModels\MyCoursesViewModel;
+use ViewModels\CourseProgressViewModel;
+use ViewModels\LessonViewModel;
 use Models\Course;
 use Models\Enrollment;
 use Models\User;
+use Models\Lesson;
+use Models\Material;
 
 class EnrollmentController extends Controller {
 
@@ -168,7 +174,7 @@ class EnrollmentController extends Controller {
         $enrollments = array_map(fn($e) => $e->toArray(), $enrollments);
 
         $viewModel = new MyCoursesViewModel(
-            title: 'Khóa học của tôi - Online Course',
+            title: 'Khóa học của tôi - FeetCode',
             enrollments: $enrollments
         );
 
@@ -179,20 +185,168 @@ class EnrollmentController extends Controller {
      * Display course progress with lessons
      */
     public function courseProgress($courseId) {
+        $this->requireRole(User::ROLE_STUDENT);
 
+        $studentId = $_SESSION['user_id'];
+        
+        $enrollment = Enrollment::query()
+            ->where('student_id', $studentId)
+            ->where('course_id', $courseId)
+            ->first();
+            
+        if ($enrollment) {
+            $course = Course::find($courseId);
+            if ($course) {
+                $lessons = Lesson::query()
+                    ->where('course_id', $courseId)
+                    ->orderBy('`order`', 'ASC')
+                    ->get();
+                $lessons = array_map(fn($l) => $l->toArray(), $lessons);
+
+                $viewModel = new CourseProgressViewModel(
+                    title: 'Tiến độ học tập - ' . $course->title,
+                    course: $course->toArray(),
+                    lessons: $lessons,
+                    enrollment: $enrollment->toArray()
+                );
+
+                $this->render('student/course_progress', $viewModel);
+            } else {
+                $this->setErrorMessage('Khóa học không tồn tại.');
+                $this->redirect('/student/my-courses');
+            }
+        } else {
+            $this->setErrorMessage('Bạn chưa đăng ký khóa học này.');
+            $this->redirect('/student/my-courses');
+        }
     }
 
     /**
      * View lesson content
      */
     public function viewLesson($lessonId) {
+        $this->requireRole(User::ROLE_STUDENT);
 
+        $studentId = $_SESSION['user_id'];
+        $lesson = Lesson::find($lessonId);
+        
+        if ($lesson) {
+             $enrollment = Enrollment::query()
+                ->where('student_id', $studentId)
+                ->where('course_id', $lesson->course_id)
+                ->first();
+                
+            if ($enrollment) {
+                $course = Course::find($lesson->course_id);
+                if ($course) {
+                    $lessons = Lesson::query()
+                        ->where('course_id', $lesson->course_id)
+                        ->orderBy('`order`', 'ASC')
+                        ->get();
+                    $lessons = array_map(fn($l) => $l->toArray(), $lessons);
+                    
+                    $materials = Material::query()
+                        ->where('lesson_id', $lessonId)
+                        ->orderBy('uploaded_at', 'DESC')
+                        ->get();
+                    $materials = array_map(fn($m) => $m->toArray(), $materials);
+
+                    $nextLesson = Lesson::query()
+                        ->where('course_id', $lesson->course_id)
+                        ->where('`order`', '>', $lesson->order)
+                        ->orderBy('`order`', 'ASC')
+                        ->first();
+                        
+                    $prevLesson = Lesson::query()
+                        ->where('course_id', $lesson->course_id)
+                        ->where('`order`', '<', $lesson->order)
+                        ->orderBy('`order`', 'DESC')
+                        ->first();
+
+                    // Update progress
+                    $totalLessons = count($lessons);
+                    $currentIndex = -1;
+                    foreach($lessons as $idx => $l) {
+                        if ($l['id'] == $lesson->id) {
+                            $currentIndex = $idx;
+                            break;
+                        }
+                    }
+                    
+                    $newProgress = round((($currentIndex + 1) / $totalLessons) * 100);
+
+                    if ($newProgress > $enrollment->progress) {
+                        $enrollment->progress = $newProgress;
+                        if ($newProgress >= 100) {
+                            $enrollment->status = Enrollment::STATUS_COMPLETED;
+                        }
+                        $enrollment->save();
+                    }
+
+                    $viewModel = new LessonViewModel(
+                        title: $lesson->title . ' - ' . $course->title,
+                        course: $course->toArray(),
+                        lesson: $lesson->toArray(),
+                        lessons: $lessons,
+                        materials: $materials,
+                        enrollment: $enrollment->toArray(),
+                        nextLesson: $nextLesson ? $nextLesson->toArray() : null,
+                        prevLesson: $prevLesson ? $prevLesson->toArray() : null
+                    );
+
+                    $this->render('student/lesson', $viewModel);
+                }
+            } else {
+                $this->setErrorMessage('Bạn chưa đăng ký khóa học này.');
+                $this->redirect('/courses/' . $lesson->course_id);
+            }
+        } else {
+            http_response_code(404);
+            echo 'Bài học không tồn tại.';
+            exit;
+        }
     }
 
     /**
      * Update progress manually
      */
     public function updateProgress() {
+        $this->requireRole(User::ROLE_STUDENT);
 
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/student/my-courses');
+        }
+
+        $enrollmentId = intval($this->getPost('enrollment_id', 0));
+        $progress = intval($this->getPost('progress', 0));
+
+        $enrollment = Enrollment::find($enrollmentId);
+
+        if ($enrollment) {
+            if ($enrollment->student_id != $_SESSION['user_id']) {
+                $this->setErrorMessage('Không có quyền truy cập.');
+                $this->redirect('/student/my-courses');
+            }
+
+            $progress = max(0, min(100, $progress));
+            $enrollment->progress = $progress;
+            if ($progress >= 100) {
+                $enrollment->status = Enrollment::STATUS_COMPLETED;
+            } else {
+                // Keep current status if not completed, or set to active? 
+                // Usually just check completion.
+                if ($enrollment->status == Enrollment::STATUS_COMPLETED && $progress < 100) {
+                    $enrollment->status = Enrollment::STATUS_ACTIVE;
+                }
+            }
+            $enrollment->save();
+
+            $this->setSuccessMessage('Đã cập nhật tiến độ.');
+            $this->redirect('/student/course/' . $enrollment->course_id . '/progress');
+        } else {
+             $this->setErrorMessage('Dữ liệu không tồn tại.');
+             $this->redirect('/student/my-courses');
+        }
+        exit;
     }
 }
