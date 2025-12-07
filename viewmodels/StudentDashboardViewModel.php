@@ -10,5 +10,7 @@ class StudentDashboardViewModel extends ViewModel {
         public array $enrollments,
         public array $recentCourses,
         public array $stats
-    ){}
+    ){
+        parent::__construct();
+    }
 }

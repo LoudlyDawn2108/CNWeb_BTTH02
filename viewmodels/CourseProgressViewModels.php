@@ -10,5 +10,7 @@ class CourseProgressViewModel extends ViewModel {
         public array $course,
         public array $lessons,
         public array $enrollment
-    ) {}
+    ) {
+        parent::__construct();
+    }
 }
