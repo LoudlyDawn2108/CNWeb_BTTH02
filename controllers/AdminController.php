@@ -220,6 +220,62 @@ class AdminController extends Controller
     }
 
     /**
+     * Store Category - Handle form submission
+     */
+    public function storeCategory(): void
+    {
+        $errors = [];
+        $name = trim($_POST['name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        // Validation
+        if (empty($name)) {
+            $errors['name'] = 'T\u00ean danh m\u1ee5c kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng';
+        } elseif (strlen($name) < 3) {
+            $errors['name'] = 'T\u00ean danh m\u1ee5c ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t 3 k\u00fd t\u1ef1';
+        } elseif (strlen($name) > 100) {
+            $errors['name'] = 'T\u00ean danh m\u1ee5c kh\u00f4ng \u0111\u01b0\u1ee3c qu\u00e1 100 k\u00fd t\u1ef1';
+        } else {
+            // Check for duplicate category name
+            $existingCategory = Category::query()
+                ->whereRaw('LOWER(name) = LOWER(:name)', [':name' => $name])
+                ->first();
+            
+            if ($existingCategory) {
+                $errors['name'] = 'T\u00ean danh m\u1ee5c \u0111\u00e3 t\u1ed3n t\u1ea1i';
+            }
+        }
+
+        if (!empty($description) && strlen($description) > 500) {
+            $errors['description'] = 'M\u00f4 t\u1ea3 kh\u00f4ng \u0111\u01b0\u1ee3c qu\u00e1 500 k\u00fd t\u1ef1';
+        }
+
+        // If validation fails, redirect back with errors
+        if (!empty($errors)) {
+            $_SESSION['errors'] = $errors;
+            $_SESSION['old'] = $_POST;
+            $_SESSION['error'] = 'Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i th\u00f4ng tin';
+            $this->redirect('/admin/categories/create');
+        }
+
+        try {
+            // Create category
+            $category = new Category();
+            $category->name = $name;
+            $category->description = !empty($description) ? $description : null;
+            $category->save();
+
+            $_SESSION['success'] = 'Th\u00eam danh m\u1ee5c th\u00e0nh c\u00f4ng';
+            $this->redirect('/admin/categories');
+
+        } catch (Exception $e) {
+            $_SESSION['error'] = 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage();
+            $_SESSION['old'] = $_POST;
+            $this->redirect('/admin/categories/create');
+        }
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void

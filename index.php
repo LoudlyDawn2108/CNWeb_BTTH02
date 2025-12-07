@@ -75,6 +75,7 @@ try {
     // Admin Categories
     $router->get('/admin/categories', [AdminController::class, 'listCategories']);
     $router->get('/admin/categories/create', [AdminController::class, 'createCategory']);
+    $router->post('/admin/categories/store', [AdminController::class, 'storeCategory']);
 
 
     // Dispatch
