@@ -1,6 +1,7 @@
 <?php
 
 namespace ViewModels;
+require_once __DIR__ . '/../models/User.php';
 
 use Lib\ViewModel;
 use Lib\Validation\Attributes\Required;
@@ -8,16 +9,15 @@ use Lib\Validation\Attributes\Email;
 use Lib\Validation\Attributes\MinLength;
 use Lib\Validation\Attributes\DisplayName;
 use Models\User;
+use Models\UserTable;
 
 class AuthLoginViewModel extends ViewModel
 {
-    #[Required("Please enter {field}")]
-    #[DisplayName("Username or Email")]
+    #[Required("Please enter your username")]
     public string $username = '';
 
     #[Required("Please enter your password")]
     #[MinLength(1)]
-    #[DisplayName("Password")]
     public string $password = '';
 
     public function __construct(
@@ -30,7 +30,7 @@ class AuthLoginViewModel extends ViewModel
 
 class AuthRegisterViewModel extends ViewModel
 {
-    #[Required]
+    #[Required("Please enter your {field}")]
     #[MinLength(3)]
     #[DisplayName("Username")]
     public string $username = '';
@@ -55,8 +55,7 @@ class AuthRegisterViewModel extends ViewModel
 
     public int $role = 0;
 
-    #[Required]
-    #[DisplayName("Terms Agreement")]
+    #[Required("You must agree to the terms and conditions")]
     public ?string $terms = null;
 
     public function __construct(
@@ -68,6 +67,7 @@ class AuthRegisterViewModel extends ViewModel
 
     protected function validateCustom(): void
     {
+        $u = new UserTable();
         // Password Match
         if ($this->password !== $this->confirm_password) {
             $this->modelState->addError('confirm_password', 'Mật khẩu xác nhận không khớp.');
@@ -80,14 +80,14 @@ class AuthRegisterViewModel extends ViewModel
 
         // Duplicate Check (Only run if username/email are basically valid to save DB hits)
         if (!$this->modelState->hasError('username')) {
-            $exists = User::query()->where(User::USERNAME, $this->username)->count() > 0;
+            $exists = User::query()->where($u->USERNAME, $this->username)->count() > 0;
             if ($exists) {
                 $this->modelState->addError('username', 'Tên đăng nhập đã tồn tại.');
             }
         }
 
         if (!$this->modelState->hasError('email')) {
-            $emailExists = User::query()->where(User::EMAIL, $this->email)->count() > 0;
+            $emailExists = User::query()->where($u->EMAIL, $this->email)->count() > 0;
             if ($emailExists) {
                 $this->modelState->addError('email', 'Email đã được sử dụng.');
             }
