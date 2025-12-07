@@ -1,5 +1,6 @@
 <?php
 /** @var ViewModel $viewModel */
+
 use Lib\ViewModel;
 
 ?>
@@ -53,9 +54,6 @@ use Lib\ViewModel;
                                 <li><a class="dropdown-item" href="/instructor/dashboard">
                                         <i class="bi bi-speedometer2"></i> Dashboard
                                     </a></li>
-                                <li><a class="dropdown-item" href="/instructor/my-courses">
-                                        <i class="bi bi-book"></i> Khóa học của tôi
-                                    </a></li>
                             <?php else: ?>
                                 <li><a class="dropdown-item" href="/student/dashboard">
                                         <i class="bi bi-speedometer2"></i> Dashboard
@@ -64,7 +62,9 @@ use Lib\ViewModel;
                                         <i class="bi bi-book"></i> Khóa học của tôi
                                     </a></li>
                             <?php endif; ?>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item text-danger" href="/auth/logout">
                                     <i class="bi bi-box-arrow-right"></i> Đăng xuất
                                 </a></li>
