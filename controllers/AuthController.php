@@ -9,8 +9,7 @@ require_once __DIR__ . '/../viewmodels/AuthViewModels.php';
 use JetBrains\PhpStorm\NoReturn;
 use Lib\Controller;
 use Models\User;
-use Requests\Auth\LoginRequest;
-use Requests\Auth\RegisterRequest;
+use Models\UserTable;
 use ViewModels\AuthLoginViewModel;
 use ViewModels\AuthRegisterViewModel;
 
@@ -56,26 +55,34 @@ class AuthController extends Controller {
     /**
      * Process login
      */
-    #[NoReturn]
-    public function login(LoginRequest $request): void {
-        $user = User::query()->where(User::USERNAME, $request->username)->first();
+    public function login(): void {
+        $viewModel = new AuthLoginViewModel(title: 'Đăng nhập - Online Course');
+        $viewModel->handleRequest($_POST);
 
-        if (!$user) {
-            $user = User::query()->where(User::EMAIL, $request->username)->first();
+        if ($viewModel->modelState->isValid) {
+            $u = new UserTable();
+            $user = User::query()->where($u->USERNAME, $viewModel->username)->first();
+
+            if (!$user) {
+                $user = User::query()->where($u->EMAIL, $viewModel->username)->first();
+            }
+
+            if ($user && password_verify($viewModel->password, $user->password) && $user->status == 1) {
+                $_SESSION['user_id'] = $user->id;
+                $_SESSION['username'] = $user->username;
+                $_SESSION['fullname'] = $user->fullname;
+                $_SESSION['role'] = $user->role;
+                $_SESSION['email'] = $user->email;
+
+                $this->redirectByRole();
+            }
+
+            // Add model error for invalid credentials
+            $viewModel->modelState->addError('username', 'Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị vô hiệu hóa.');
         }
 
-        if ($user && password_verify($request->password, $user->password) && $user->status == 1) {
-            $_SESSION['user_id'] = $user->id;
-            $_SESSION['username'] = $user->username;
-            $_SESSION['fullname'] = $user->fullname;
-            $_SESSION['role'] = $user->role;
-            $_SESSION['email'] = $user->email;
-
-            $this->redirectByRole();
-        } else {
-            $this->setErrorMessage('Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản đã bị vô hiệu hóa.');
-            $this->redirect('/auth/login');
-        }
+        // If we got here, something failed, redisplay form
+        $this->render('auth/login', $viewModel);
     }
 
     /**
@@ -87,10 +94,8 @@ class AuthController extends Controller {
         }
 
         $viewModel = new AuthRegisterViewModel(
-            title: 'Đăng ký - Online Course',
-            old:   $_SESSION['old'] ?? []
+            title: 'Đăng ký - Online Course'
         );
-        unset($_SESSION['old']);
 
         $this->render('auth/register', $viewModel);
     }
@@ -98,45 +103,32 @@ class AuthController extends Controller {
     /**
      * Process registration
      */
-    public function register(RegisterRequest $request): void {
-        $data = [
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => $request->password,
-            'fullname' => $request->fullname,
-            'role' => $request->role
-        ];
+    public function register(): void {
+        $viewModel = new AuthRegisterViewModel(title: 'Đăng ký - Online Course');
+        $viewModel->handleRequest($_POST);
 
-        // Hash password
-        $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        if ($viewModel->modelState->isValid) {
+            try {
+                $data = [
+                    'username' => $viewModel->username,
+                    'email' => $viewModel->email,
+                    'password' => password_hash($viewModel->password, PASSWORD_DEFAULT),
+                    'fullname' => $viewModel->fullname,
+                    'role' => $viewModel->role,
+                    'status' => 1
+                ];
 
-        try {
-            // Check for duplicates first to avoid raw SQL errors if possible,
-            // but strict AR might rely on DB constraints.
-            // Old code didn't explicitly check here, relied on Model catch?
-            // Let's check explicitly for better UX.
-            $exists = User::query()->where(User::USERNAME, $data['username'])->count() > 0
-                || User::query()->where(User::EMAIL, $data['email'])->count() > 0;
+                User::create($data);
+                $this->setSuccessMessage('Đăng ký thành công! Vui lòng đăng nhập.');
+                $this->redirect('/auth/login');
 
-            if ($exists) {
-                $this->setErrorMessage("Username or Email already exists");
-                $this->redirect('/auth/register');
+            } catch (Exception $e) {
+                $this->setErrorMessage('Có lỗi xảy ra: ' . $e->getMessage());
             }
-
-            User::create($data);
-            $this->setSuccessMessage('Đăng ký thành công! Vui lòng đăng nhập.');
-            $this->redirect('/auth/login');
-
-        } catch (Exception $e) {
-            $this->setErrorMessage('Có lỗi xảy ra. Vui lòng thử lại. ' . $e->getMessage());
-            $_SESSION['old'] = [
-                'username' => $request->username,
-                'email' => $request->email,
-                'fullname' => $request->fullname,
-                'role' => $request->role
-            ];
-            $this->redirect('/auth/register');
         }
+
+        // Render view with errors
+        $this->render('auth/register', $viewModel);
     }
 
     /**

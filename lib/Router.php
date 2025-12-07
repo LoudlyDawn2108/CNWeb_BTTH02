@@ -1,7 +1,5 @@
 <?php
 
-use Lib\FormRequest;
-
 class Router {
     private $routes = [];
 
@@ -36,41 +34,9 @@ class Router {
                 if (class_exists($controllerClass)) {
                     $controller = new $controllerClass();
                     if (method_exists($controller, $action)) {
-
-                        // Reflection to map parameters
-                        $reflection = new ReflectionMethod($controller, $action);
-                        $args = [];
-
-                        foreach ($reflection->getParameters() as $param) {
-                            $type = $param->getType();
-                            if ($type && !$type->isBuiltin()) {
-                                $requestClass = $type->getName();
-
-                                if (!class_exists($requestClass)) {
-                                    class_exists($requestClass);
-                                }
-
-                                if (class_exists($requestClass) && is_subclass_of($requestClass, FormRequest::class)) {
-                                    $args[] = new $requestClass();
-                                }
-                            } else {
-                                // Route parameter (scalar)
-                                if (!empty($matches)) {
-                                    $args[] = array_shift($matches);
-                                } else {
-                                    // Optional param or error?
-                                    // If default value exists, use it
-                                    if ($param->isDefaultValueAvailable()) {
-                                        $args[] = $param->getDefaultValue();
-                                    } else {
-                                        // Should not happen if route regex matches params
-                                        $args[] = null;
-                                    }
-                                }
-                            }
-                        }
-
-                        $controller->$action(...$args);
+                        // Simple parameter mapping for route params
+                        // If the action expects arguments, we pass the regex matches in order
+                        $controller->$action(...$matches);
                         return;
                     }
                 }

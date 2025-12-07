@@ -10,22 +10,26 @@ use Functional\Option;
 
 require_once __DIR__ . '/../config/Database.php';
 
-class Course extends Model {
-    const TABLE = 'courses';
-    const ID = 'id';
-    const TITLE = 'title';
-    const DESCRIPTION = 'description';
-    const INSTRUCTOR_ID = 'instructor_id';
-    const CATEGORY_ID = 'category_id';
-    const PRICE = 'price';
-    const DURATION_WEEKS = 'duration_weeks';
-    const LEVEL = 'level';
-    const IMAGE = 'image';
-    const STATUS = 'status';
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = 'updated_at';
+class CourseTable {
+    public function __toString(): string {
+        return 'courses';
+    }
+    public string $ID = 'courses.id';
+    public string $TITLE = 'courses.title';
+    public string $DESCRIPTION = 'courses.description';
+    public string $INSTRUCTOR_ID = 'courses.instructor_id';
+    public string $CATEGORY_ID = 'courses.category_id';
+    public string $PRICE = 'courses.price';
+    public string $DURATION_WEEKS = 'courses.duration_weeks';
+    public string $LEVEL = 'courses.level';
+    public string $IMAGE = 'courses.image';
+    public string $STATUS = 'courses.status';
+    public string $CREATED_AT = 'courses.created_at';
+    public string $UPDATED_AT = 'courses.updated_at';
+}
 
-    protected ?string $table = self::TABLE;
+class Course extends Model {
+    protected ?string $table = 'courses';
 
     public int $id;
     public string $title;

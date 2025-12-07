@@ -25,15 +25,6 @@ class HomeIndexViewModel extends ViewModel
         public array  $categories,
     )
     {
+        parent::__construct();
     }
 }
-
-class PageViewModel extends ViewModel
-{
-    public function __construct(
-        public string $title
-    )
-    {
-    }
-}
-
