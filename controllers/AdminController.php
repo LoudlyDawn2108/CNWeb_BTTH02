@@ -276,6 +276,36 @@ class AdminController extends Controller
     }
 
     /**
+     * Edit Category - Show edit form with existing data
+     */
+    public function editCategory(int $id): void
+    {
+        // Find category
+        $category = Category::find($id);
+
+        if (!$category) {
+            $_SESSION['error'] = 'Kh\u00f4ng t\u00ecm th\u1ea5y danh m\u1ee5c';
+            $this->redirect('/admin/categories');
+        }
+
+        // Get course count for this category
+        $courseCount = Course::query()
+            ->where('category_id', $id)
+            ->count();
+
+        $categoryData = $category->toArray();
+        $categoryData['course_count'] = $courseCount;
+
+        $viewModel = new \ViewModels\AdminCategoryFormViewModel(
+            title: "Ch\u1ec9nh s\u1eeda danh m\u1ee5c - Feetcode",
+            category: $categoryData,
+            isEdit: true
+        );
+
+        $this->render('admin/categories/edit', $viewModel);
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void

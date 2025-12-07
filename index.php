@@ -76,6 +76,7 @@ try {
     $router->get('/admin/categories', [AdminController::class, 'listCategories']);
     $router->get('/admin/categories/create', [AdminController::class, 'createCategory']);
     $router->post('/admin/categories/store', [AdminController::class, 'storeCategory']);
+    $router->get('/admin/categories/{id}/edit', [AdminController::class, 'editCategory']);
 
 
     // Dispatch
