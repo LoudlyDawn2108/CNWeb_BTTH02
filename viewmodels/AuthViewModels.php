@@ -11,11 +11,11 @@ use Models\User;
 
 class AuthLoginViewModel extends ViewModel
 {
-    #[Required]
+    #[Required("Please enter {field}")]
     #[DisplayName("Username or Email")]
     public string $username = '';
 
-    #[Required]
+    #[Required("Please enter your password")]
     #[MinLength(1)]
     #[DisplayName("Password")]
     public string $password = '';
