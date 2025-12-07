@@ -12,37 +12,71 @@ use Functional\Option;     // Dùng Option cho ViewModel thì ok
 class LessonController extends Controller {
 
     // 1. Form tạo bài học
-    public function create($courseId): void
-    {
-        // ViewModel của bạn cần Option, nên ở đây dùng Option::none() là đúng
-        $viewModel = new LessonFormViewModel(
-            (int)$courseId,
-            Option::none()
-        );
-        $this->render('instructor/lessons/create', $viewModel);
-    }
+    public function create($courseId): void 
+{
+    $this->user()->match(
+        function ($user) use ($courseId) {
+            // Check user có phải instructor của course này không
+            $course = Course::find($courseId);
+            if (!$course || $course->instructor_id != $user['id']) {
+                http_response_code(403);
+                die('Không có quyền');
+            }
+            
+            $viewModel = new LessonFormViewModel(
+                (int)$courseId,
+                Option::none()
+            );
+            $this->render('instructor/lessons/create', $viewModel);
+        },
+        fn() => $this->redirect('/auth/login')
+    );
+}
 
-    // 2. Lưu bài học (Sửa lại theo lib\Model)
+    // 2. Lưu bài học (với validation)
     public function store($courseId): void
     {
-        $data = [
-            'course_id' => $courseId,
-            'title' => $_POST['title'],
-            'content' => $_POST['content'],
-            'video_url' => $_POST['video_url'] ?? '',
-            'order' => $_POST['order'] ?? 0
-        ];
+        $this->user()->match(
+            function ($user) use ($courseId) {
+                // Check quyền sở hữu
+                $course = Course::find($courseId);
+                if (!$course || $course->instructor_id != $user['id']) {
+                    http_response_code(403);
+                    die('Không có quyền');
+                }
 
-        try {
-            // lib\Model::create trả về Object, không phải Result
-            Lesson::create($data);
+                // Create ViewModel and bind POST data
+                $viewModel = new LessonFormViewModel(
+                    (int)$courseId,
+                    Option::none()
+                );
+                $viewModel->handleRequest($_POST);
 
-            $this->setSuccessMessage('Bài học đã được tạo');
-            $this->redirect("/instructor/courses/$courseId/manage");
-        } catch (\Exception $e) {
-            $this->setErrorMessage('Lỗi: ' . $e->getMessage());
-            $this->redirect("/instructor/courses/$courseId/lessons/create");
-        }
+                // If validation fails, re-render form with errors
+                if (!$viewModel->modelState->isValid) {
+                    $this->render('instructor/lessons/create', $viewModel);
+                    return;
+                }
+
+                // Validation passed - proceed to save
+                try {
+                    Lesson::create([
+                        'course_id' => $courseId,
+                        'title' => $viewModel->title,
+                        'content' => $viewModel->content,
+                        'video_url' => $viewModel->video_url,
+                        'order' => $viewModel->order
+                    ]);
+
+                    $this->setSuccessMessage('Bài học đã được tạo');
+                    $this->redirect("/instructor/courses/$courseId/manage");
+                } catch (\Exception $e) {
+                    $viewModel->modelState->addError('title', 'Không thể tạo bài học: ' . $e->getMessage());
+                    $this->render('instructor/lessons/create', $viewModel);
+                }
+            },
+            fn() => $this->redirect('/auth/login')
+        );
     }
 
     // 3. Form sửa bài học
