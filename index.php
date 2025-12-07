@@ -131,10 +131,10 @@ try {
     $router->get('/instructor/my-courses', [InstructorController::class, 'myCourses']);
 
     // 2. Quản lý Khóa học (Courses)
-    $router->get('/instructor/courses/create', [InstructorController::class, 'createForm']); // Form tạo
+    $router->get('/instructor/courses/create', [InstructorController::class, 'createCourse']); // Form tạo
     $router->post('/instructor/courses/store', [InstructorController::class, 'storeCourse']);  // Lưu tạo
 
-    $router->get('/instructor/courses/{id}/edit', [InstructorController::class, 'editForm']);   // Form sửa
+    $router->get('/instructor/courses/{id}/edit', [InstructorController::class, 'editCourse']);   // Form sửa
     $router->post('/instructor/courses/{id}/update', [InstructorController::class, 'updateCourse']); // Lưu sửa
     $router->post('/instructor/courses/{id}/delete', [InstructorController::class, 'deleteCourse']); // Xóa
 

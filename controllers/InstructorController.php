@@ -61,78 +61,88 @@ class InstructorController extends Controller
     }
 
 
-    public function createForm(): void
+    public function createCourse(): void
     {
-        $categoryModel = new Category();
-        $categories = $categoryModel->getAll();
+        $this->user()->match(
+            function ($user) {
+                $categories = Collection::make(Category::all());
 
-        $viewModel = new CourseFormViewModel(
-            $categories,
-            Option::none()
+                $viewModel = new CourseFormViewModel(
+                    $categories,
+                    Option::none()
+                );
+                $this->render('instructor/courses/create', $viewModel);
+            },
+            fn() => $this->redirect('/auth/login')
         );
-        $this->render('instructor/courses/create', $viewModel);
     }
 
     #[NoReturn]
-    public function storeCourse() {
-        error_log("=== START CREATE COURSE ===");
-
+    public function storeCourse(): void
+    {
         $this->user()->match(
             function($user) {
-                error_log("User ID: " . $user['id']);
+                $categories = Collection::make(Category::all());
+                
+                // Create ViewModel and bind POST data
+                $viewModel = new CourseFormViewModel(
+                    $categories,
+                    Option::none()
+                );
+                $viewModel->handleRequest($_POST);
 
+                // If validation fails, re-render form with errors
+                if (!$viewModel->modelState->isValid) {
+                    $this->render('instructor/courses/create', $viewModel);
+                    return;
+                }
+
+                // Validation passed - proceed to save
                 $courseModel = new Course();
                 $imageResult = $this->handleImageUpload($_FILES['image'] ?? null);
 
                 $data = [
-                    'title' => $this->getPost('title'),
-                    'description' => $this->getPost('description'),
+                    'title' => $viewModel->title,
+                    'description' => $viewModel->description,
                     'image' => $imageResult->getOrElse(''),
                     'instructor_id' => $user['id'],
-                    'category_id' => $this->getPost('category_id'),
-                    'level' => $this->getPost('level'),
-                    'price' => $this->getPost('price')
+                    'category_id' => $viewModel->category_id,
+                    'level' => $viewModel->level,
+                    'price' => $viewModel->price,
+                    'duration_weeks' => $viewModel->duration_weeks
                 ];
-
-                error_log("Data to save: " . print_r($data, true));
 
                 $courseModel->createCourse($data)->match(
                     function($courseId) {
-                        error_log("✅ SUCCESS: Course ID = $courseId");
                         $this->setSuccessMessage('Khóa học đã được tạo thành công');
                         $this->redirect('/instructor/dashboard');
                     },
-                    function() {
-                        error_log("❌ FAILED: Cannot create course");
-                        $this->setErrorMessage('Không thể tạo khóa học');
-                        $this->redirect('/instructor/courses/create');
+                    function() use ($viewModel) {
+                        $viewModel->modelState->addError('title', 'Không thể tạo khóa học. Vui lòng thử lại.');
+                        $this->render('instructor/courses/create', $viewModel);
                     }
                 );
             },
-            function() {
-                error_log("❌ User not logged in");
-                $this->redirect('/auth/login');
-            }
+            fn() => $this->redirect('/auth/login')
         );
     }
 
 
 
-    public function editForm($id)
+    public function editCourse($id): void
     {
         $this->user()->match(
             function ($user) use ($id) {
                 $courseModel = new Course();
-                $categoryModel = new Category();
 
                 $courseModel->getById($id)->match(
-                    function ($course) use ($user, $categoryModel) {
+                    function ($course) use ($user) {
                         if ($course->instructor_id != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
                         }
 
-                        $categories = $categoryModel->getAll();
+                        $categories = Collection::make(Category::all());
                         $viewModel = new CourseFormViewModel(
                             $categories,
                             Option::some($course)
