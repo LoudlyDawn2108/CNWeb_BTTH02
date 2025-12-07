@@ -77,6 +77,25 @@ try {
     $router->dispatch($_SERVER['REQUEST_METHOD'], $requestUri);
 
 } catch (Exception $e) {
+    // Clear session to "log them out" as requested
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_unset();
+        session_destroy();
+    }
+
     http_response_code(500);
-    echo 'Server Error: ' . $e->getMessage();
+    
+    // Read the content of the 500 error page
+    $errorPageContent = file_get_contents(BASE_PATH . '/views/errors/500.php');
+    if ($errorPageContent !== false) {
+        echo $errorPageContent;
+    } else {
+        // Fallback if view file is missing
+        echo "<!DOCTYPE html><html lang=\"vi\"><head><title>500 - Server Error</title></head><body>";
+        echo "<div style=\"text-align: center; padding: 50px;\">";
+        echo "<h1>500 Internal Server Error</h1>";
+        echo "<p>Something went wrong. Please try again later.</p>";
+        echo "<a href=\"/\">Go to Homepage</a>";
+        echo "</div></body></html>";
+    }
 }
