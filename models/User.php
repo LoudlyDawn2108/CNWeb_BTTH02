@@ -1,6 +1,6 @@
 <?php
 namespace Models;
-use Model;
+use Lib\Model;
 
 require_once __DIR__ . '/../lib/Model.php';
 

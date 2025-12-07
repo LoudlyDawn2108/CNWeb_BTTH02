@@ -2,13 +2,15 @@
 namespace ViewModels\Instructor;
 
 use Functional\Collection;
+use Lib\ViewModel;
 
-class CourseManageViewModel {
+class CourseManageViewModel extends ViewModel {
     public object $course;
     public Collection $lessons;
     public object $stats;
 
     public function __construct(object $courseData, Collection $lessonsCollection) {
+        parent::__construct();
         $this->course = $courseData;
 
         $this->lessons = $lessonsCollection->map(function($l) {

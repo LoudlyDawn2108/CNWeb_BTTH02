@@ -38,8 +38,8 @@ class CourseDetailViewModel extends ViewModel {
      * @param CourseView $course
      * @param Lesson[] $lessons
      * @param bool $isEnrolled
-     * @param ?array $enrollment
      * @param CourseView[] $relatedCourses
+     * @param ?array $enrollment
      * @param ?array $currentUser
      */
     public function __construct(
@@ -47,8 +47,8 @@ class CourseDetailViewModel extends ViewModel {
         public CourseView $course,
         public array      $lessons,
         public bool       $isEnrolled,
-        public ?array      $enrollment = [],
         public array      $relatedCourses,
+        public ?array      $enrollment = [],
         public ?array      $currentUser = [],
     ) {
         parent::__construct();

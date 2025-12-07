@@ -1,5 +1,5 @@
 <?php
-/** @var ViewModels\Instructor\LessonFormViewModel $model */
+/** @var ViewModels\Instructor\LessonFormViewModel $viewModel */
 ?>
 
 <div class="container py-4">
@@ -7,8 +7,8 @@
         <div class="col-lg-8">
 
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold mb-0"><?= htmlspecialchars($model->pageTitle) ?></h4>
-                <a href="/instructor/courses/<?= $model->courseId ?>/manage" class="btn btn-outline-secondary btn-sm">
+                <h4 class="fw-bold mb-0"><?= htmlspecialchars($viewModel->pageTitle) ?></h4>
+                <a href="/instructor/courses/<?= $viewModel->courseId ?>/manage" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left"></i> Quay lại khóa học
                 </a>
             </div>
@@ -18,12 +18,12 @@
                     <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-info-circle"></i> Thông tin bài học</h6>
                 </div>
                 <div class="card-body">
-                    <form action="<?= $model->actionUrl ?>" method="POST">
+                    <form action="<?= $viewModel->actionUrl ?>" method="POST">
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tên bài học <span class="text-danger">*</span></label>
                             <input type="text" name="title" class="form-control" required
-                                   value="<?= htmlspecialchars($model->getLessonValue('title')) ?>"
+                                   value="<?= htmlspecialchars($viewModel->getLessonValue('title')) ?>"
                                    placeholder="Ví dụ: Bài 1 - Giới thiệu">
                         </div>
 
@@ -32,7 +32,7 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-youtube"></i></span>
                                 <input type="url" name="video_url" class="form-control"
-                                       value="<?= htmlspecialchars($model->getLessonValue('video_url')) ?>"
+                                       value="<?= htmlspecialchars($viewModel->getLessonValue('video_url')) ?>"
                                        placeholder="https://www.youtube.com/watch?v=...">
                             </div>
                             <div class="form-text">Để trống nếu đây là bài đọc.</div>
@@ -41,14 +41,14 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nội dung bài học</label>
                             <textarea name="content" class="form-control" rows="6"
-                                      placeholder="Nội dung chi tiết, ghi chú cho học viên..."><?= htmlspecialchars($model->getLessonValue('content')) ?></textarea>
+                                      placeholder="Nội dung chi tiết, ghi chú cho học viên..."><?= htmlspecialchars($viewModel->getLessonValue('content')) ?></textarea>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Thứ tự hiển thị</label>
                                 <input type="number" name="order" class="form-control"
-                                       value="<?= htmlspecialchars($model->getLessonValue('order', 0)) ?>">
+                                       value="<?= htmlspecialchars($viewModel->getLessonValue('order', 0)) ?>">
                             </div>
                         </div>
 
@@ -61,14 +61,14 @@
                 </div>
             </div>
 
-            <?php if ($model->isEditMode()): ?>
+            <?php if ($viewModel->isEditMode()): ?>
                 <div class="card shadow-sm border-top-primary">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold text-success"><i class="bi bi-paperclip"></i> Tài liệu đính kèm</h6>
                     </div>
                     <div class="card-body">
 
-                        <form action="/instructor/lessons/<?= $model->getLessonValue('id') ?>/materials/upload"
+                        <form action="/instructor/lessons/<?= $viewModel->getLessonValue('id') ?>/materials/upload"
                               method="POST" enctype="multipart/form-data" class="mb-4">
                             <label class="form-label small text-muted">Tải lên file mới (PDF, Docx, Zip...)</label>
                             <div class="input-group">
@@ -81,15 +81,15 @@
 
                         <hr>
 
-                        <h6 class="small fw-bold text-muted mb-3">Danh sách tài liệu (<?= $model->getMaterialsCount() ?>)</h6>
+                        <h6 class="small fw-bold text-muted mb-3">Danh sách tài liệu (<?= $viewModel->getMaterialsCount() ?>)</h6>
 
-                        <?php if (!$model->hasMaterials()): ?>
+                        <?php if (!$viewModel->hasMaterials()): ?>
                             <div class="text-center text-muted py-3 bg-light rounded small">
                                 Chưa có tài liệu nào đính kèm.
                             </div>
                         <?php else: ?>
                             <ul class="list-group">
-                                <?php foreach ($model->materials as $file): ?>
+                                <?php foreach ($viewModel->materials as $file): ?>
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center overflow-hidden">
                                             <?php

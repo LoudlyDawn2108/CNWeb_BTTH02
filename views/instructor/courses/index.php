@@ -1,5 +1,5 @@
 <?php
-/** @var ViewModels\Instructor\InstructorDashboardViewModel $model */
+/** @var ViewModels\Instructor\InstructorDashboardViewModel $viewModel */
 ?>
 
 <div class="container py-4">
@@ -28,7 +28,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <?php if ($model->courses->isEmpty()): ?>
+                    <?php if ($viewModel->courses->isEmpty()): ?>
                         <tr>
                             <td colspan="6" class="text-center py-5">
                                 <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="80" class="mb-3 opacity-50" alt="Empty">
@@ -37,7 +37,7 @@
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($model->courses as $course): ?>
+                        <?php foreach ($viewModel->courses as $course): ?>
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">

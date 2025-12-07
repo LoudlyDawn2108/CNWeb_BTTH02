@@ -8,40 +8,31 @@ use JetBrains\PhpStorm\NoReturn;
 abstract class Controller {
 
     /**
-     * Render view với Layout tự động (Header/Footer)
+     * Render a view with a ViewModel
      */
-    protected function render(string $viewPath, $viewModel = null): void
+    protected function render(string $viewPath, ViewModel $viewModel): void
     {
-        // Giải nén biến để View dùng được tên ngắn gọn $model
-        if ($viewModel) {
-            // Hỗ trợ cả $model và $viewModel
-            $model = $viewModel;
-        }
-
-        // Bắt đầu vùng đệm để lấy nội dung view con
+        // Start buffering for the main content
         ob_start();
-
         $viewFile = BASE_PATH . "/views/$viewPath.php";
         if (file_exists($viewFile)) {
-            require $viewFile;
+            // Pass $viewModel directly to the view script
+            require_once $viewFile;
         } else {
+            // Handle view not found, perhaps render a generic error view
             echo "View not found: " . htmlspecialchars($viewPath);
         }
+        $content = ob_get_clean();
 
-        $content = ob_get_clean(); // Nội dung view con đã được lưu vào biến $content
-
-        // Nhúng Layout chung (Header -> Content -> Footer)
-        // Lưu ý: Đảm bảo bạn có 2 file này trong views/layouts/
-        $headerPath = BASE_PATH . '/views/layouts/header.php';
-        $footerPath = BASE_PATH . '/views/layouts/footer.php';
-
-        if (file_exists($headerPath)) require_once $headerPath;
-        echo $content; // In nội dung view con ra giữa
-        if (file_exists($footerPath)) require_once $footerPath;
+        // Pass $viewModel to the header and footer layout files as well.
+        // These layout files will now expect a $viewModel variable.
+        require_once BASE_PATH . '/views/layouts/header.php';
+        echo $content;
+        require_once BASE_PATH . '/views/layouts/footer.php';
     }
 
     /**
-     * Chuyển hướng trang
+     * Redirect helper
      */
     #[NoReturn]
     protected function redirect(string $url): void
@@ -51,63 +42,76 @@ abstract class Controller {
     }
 
     /**
-     * Lấy thông tin User hiện tại (An toàn với Option)
-     */
-    protected function user(): Option {
-        // Ưu tiên dùng cách lưu session phẳng (user_id) vì phổ biến hơn
-        if (isset($_SESSION['user_id'])) {
-            return Option::some([
-                'id' => $_SESSION['user_id'],
-                'username' => $_SESSION['username'] ?? '',
-                'fullname' => $_SESSION['fullname'] ?? '',
-                'role' => $_SESSION['role'] ?? 0,
-                'email' => $_SESSION['email'] ?? ''
-            ]);
-        }
-        return Option::none();
-    }
-
-    /**
-     * Middleware: Kiểm tra đăng nhập và Quyền hạn
+     * Authentication Middleware
+     * @param array|int $roles Single role (int) or array of roles
      */
     protected function requireRole(int|array $roles): void
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-        // 1. Kiểm tra đã đăng nhập chưa
         if (!isset($_SESSION['user_id'])) {
-            $this->setErrorMessage('Vui lòng đăng nhập để tiếp tục.');
+            $_SESSION['error'] = 'Vui lòng đăng nhập để tiếp tục.';
             $this->redirect('/auth/login');
         }
 
-        // 2. Kiểm tra quyền
         if (!is_array($roles)) {
             $roles = [$roles];
         }
 
         if (!in_array($_SESSION['role'], $roles)) {
             http_response_code(403);
-            die('Access Denied: Bạn không có quyền truy cập trang này.');
+            echo 'Access Denied';
+            exit;
         }
     }
 
     /**
-     * Lấy dữ liệu POST an toàn
+     * Get current user securely
+     * @return Option
+     */
+    protected function user(): Option {
+        if (isset($_SESSION['user_id'])) {
+            return Option::some([
+                'id' => $_SESSION['user_id'],
+                'username' => $_SESSION['username'],
+                'fullname' => $_SESSION['fullname'],
+                'role' => $_SESSION['role'],
+                'email' => $_SESSION['email']
+            ]);
+        }
+        return Option::none();
+    }
+
+    /**
+     * Get request data type-safely
      */
     protected function getPost(string $key, $default = null) {
         return $_POST[$key] ?? $default;
     }
 
-    /**
-     * Quản lý thông báo (Flash Message)
-     */
-    protected function setSuccessMessage(string $message): void {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        $_SESSION['success_message'] = $message;
+    protected function getQuery(string $key, $default = null) {
+        return $_GET[$key] ?? $default;
     }
 
+    /**
+     * Set an error message for the next render
+     */
     protected function setErrorMessage(string $message): void {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        $_SESSION['error_message'] = $message;
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $_SESSION['error'] = $message;
+    }
+
+    /**
+     * Set a success message for the next render
+     */
+    protected function setSuccessMessage(string $message): void {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $_SESSION['success'] = $message;
     }
 }

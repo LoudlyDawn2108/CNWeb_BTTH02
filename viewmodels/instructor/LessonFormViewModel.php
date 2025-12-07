@@ -3,8 +3,9 @@ namespace ViewModels\Instructor;
 
 use Functional\Collection;
 use Functional\Option;
+use Lib\ViewModel;
 
-class LessonFormViewModel {
+class LessonFormViewModel extends ViewModel {
     public string $pageTitle;
     public string $actionUrl;
     public int $courseId;
@@ -12,6 +13,7 @@ class LessonFormViewModel {
     public Collection $materials;
 
     public function __construct(int $courseId, Option $lesson, ?Collection $materials = null) {
+        parent::__construct();
         $this->courseId = $courseId;
         $this->lesson = $lesson->map(fn($l) => (object)$l);
         $this->materials = $materials ?? Collection::make([]);

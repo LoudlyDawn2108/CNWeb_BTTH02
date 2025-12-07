@@ -3,8 +3,9 @@ namespace ViewModels\Instructor;
 
 use Functional\Collection;
 use Functional\Option;
+use Lib\ViewModel;
 
-class CourseFormViewModel {
+class CourseFormViewModel extends ViewModel {
     public string $title;
     public string $actionUrl;
     public Collection $categories;
@@ -12,6 +13,7 @@ class CourseFormViewModel {
     public Collection $levels;
 
     public function __construct(Collection $categories, Option $course) {
+        parent::__construct();
         $this->categories = $categories->map(fn($c) => (object)$c);
         $this->course = $course->map(fn($c) => (object)$c);
 

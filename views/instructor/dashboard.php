@@ -1,5 +1,5 @@
 <?php
-/** @var ViewModels\Instructor\InstructorDashboardViewModel $model */
+/** @var ViewModels\Instructor\InstructorDashboardViewModel $viewModel */
 ?>
 
 <div class="row">
@@ -13,7 +13,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title">Tổng khóa học</h6>
-                                <h2 class="fw-bold mb-0"><?= $model->totalCourses ?></h2>
+                                <h2 class="fw-bold mb-0"><?= $viewModel->totalCourses ?></h2>
                             </div>
                             <i class="bi bi-book fs-1 opacity-50"></i>
                         </div>
@@ -26,7 +26,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title">Tổng học viên</h6>
-                                <h2 class="fw-bold mb-0"><?= $model->totalStudents ?></h2>
+                                <h2 class="fw-bold mb-0"><?= $viewModel->totalStudents ?></h2>
                             </div>
                             <i class="bi bi-people fs-1 opacity-50"></i>
                         </div>
@@ -39,7 +39,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title">Thu nhập (Tạm tính)</h6>
-                                <h2 class="fw-bold mb-0"> <?= $model->totalRevenue ?> </h2> </div>
+                                <h2 class="fw-bold mb-0"> <?= $viewModel->totalRevenue ?> </h2> </div>
                             <i class="bi bi-cash-coin fs-1 opacity-50"></i>
                         </div>
                     </div>
@@ -69,14 +69,14 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <?php if ($model->courses->isEmpty()): ?>
+                        <?php if ($viewModel->courses->isEmpty()): ?>
                             <tr>
                                 <td colspan="6" class="text-center py-4 text-muted">
                                     Bạn chưa có khóa học nào. Hãy tạo khóa học đầu tiên!
                                 </td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($model->courses as $course): ?>
+                            <?php foreach ($viewModel->courses as $course): ?>
                                 <tr>
                                     <td>
                                         <img src="<?= htmlspecialchars($course->image) ?>"

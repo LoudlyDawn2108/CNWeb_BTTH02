@@ -1,14 +1,18 @@
 <?php
 namespace ViewModels\Instructor;
 use Functional\Collection;
+use Lib\ViewModel;
 
-class InstructorDashboardViewModel {
+class InstructorDashboardViewModel extends ViewModel {
     public Collection $courses;
     public int $totalCourses;
     public int $totalStudents;
     public string $totalRevenue; // Thêm biến tổng doanh thu toàn hệ thống
 
     public function __construct(Collection $rawCourses) {
+
+        parent::__construct();
+
         $this->totalCourses = $rawCourses->count();
         $revenueSum = 0; // Biến tạm để tính tổng
 
@@ -67,5 +71,6 @@ class InstructorDashboardViewModel {
             0
         );
         $this->totalRevenue = number_format($totalRev) . ' đ';
+
     }
 }

@@ -1,6 +1,6 @@
 <?php
 namespace Models;
-use Model;
+use Lib\Model;
 
 use Functional\Collection;
 use Functional\Option;

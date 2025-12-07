@@ -176,8 +176,8 @@ class CourseController extends Controller {
             course:         $course,
             lessons:        $lessons,
             isEnrolled:     $isEnrolled,
-            enrollment:     $enrollment,
             relatedCourses: $relatedCourses,
+            enrollment:     $enrollment,
             currentUser:    $currentUser
         );
 
