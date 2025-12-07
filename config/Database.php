@@ -1,10 +1,10 @@
-﻿<?php
+<?php
 /**
  * Database Configuration Class
  * Handles database connection using PDO
  */
 class Database {
-    private $host = 'localhost';
+    private $host = 'localhost:3306';
     private $db_name = 'onlinecourse';
     private $username = 'root';
     private $password = '';

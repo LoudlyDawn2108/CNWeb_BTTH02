@@ -1,4 +1,4 @@
-﻿RewriteEngine On
+RewriteEngine On
 
 # Redirect to HTTPS (optional, uncomment if needed)
 # RewriteCond %{HTTPS} off

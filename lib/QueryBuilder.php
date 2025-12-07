@@ -8,6 +8,7 @@ class QueryBuilder {
     protected array $joins = [];
     protected array $wheres = [];
     protected array $params = [];
+    protected array $groups = [];
     protected array $orders = [];
     protected ?int $limit = null;
     protected ?int $offset = null;
@@ -84,6 +85,15 @@ class QueryBuilder {
     }
 
     /**
+     * Add a GROUP BY clause
+     */
+    public function groupBy(string|array $groups): self {
+        $groups = is_array($groups) ? $groups : func_get_args();
+        $this->groups = array_merge($this->groups, $groups);
+        return $this;
+    }
+
+    /**
      * Add an ORDER BY clause
      */
     public function orderBy(string $column, string $direction = 'ASC'): self {
@@ -110,40 +120,45 @@ class QueryBuilder {
     /**
      * Execute SELECT query and return all results
      */
-    public function get(): array {
+    public function get(?string $className = null): array {
         $sql = $this->compileSelect();
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($this->params);
         
-        if ($this->modelClass) {
-            return $stmt->fetchAll(PDO::FETCH_CLASS, $this->modelClass);
+        $fetchClass = $className ?? $this->modelClass;
+        
+        if ($fetchClass) {
+            return $stmt->fetchAll(PDO::FETCH_CLASS, $fetchClass);
         }
         
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     /**
      * Execute SELECT query and return the first result
      */
-    public function first(): mixed {
+    public function first(?string $className = null): mixed {
         $this->limit(1);
         $sql = $this->compileSelect();
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($this->params);
         
-        if ($this->modelClass) {
-            $stmt->setFetchMode(PDO::FETCH_CLASS, $this->modelClass);
+        $fetchClass = $className ?? $this->modelClass;
+        
+        if ($fetchClass) {
+            $stmt->setFetchMode(PDO::FETCH_CLASS, $fetchClass);
             return $stmt->fetch() ?: null;
         }
         
-        return $stmt->fetch() ?: null;
+        return $stmt->fetch(PDO::FETCH_OBJ) ?: null;
     }
 
     /**
      * Execute INSERT query
      */
     public function insert(array $data): string|false {
-        $columns = implode(', ', array_keys($data));
+        $columns = implode(',', array_map(fn($k) => "`$k`", array_keys($data)));
+
         $placeholders = [];
         $params = [];
         
@@ -170,7 +185,7 @@ class QueryBuilder {
         
         foreach ($data as $key => $value) {
             $paramName = ':upd_' . $key;
-            $sets[] = "{$key} = {$paramName}";
+            $sets[] = "`{$key}` = {$paramName}";
             $params[$paramName] = $value;
         }
         
@@ -234,6 +249,10 @@ class QueryBuilder {
         }
         
         $sql .= $this->compileWheres();
+
+        if (!empty($this->groups)) {
+            $sql .= ' GROUP BY ' . implode(', ', $this->groups);
+        }
         
         if (!empty($this->orders)) {
             $sql .= ' ORDER BY ' . implode(', ', $this->orders);

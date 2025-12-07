@@ -1,7 +1,17 @@
 <?php
 
+namespace Lib;
+
+use Database;
+use PDO;
+use QueryBuilder;
+use ReflectionClass;
+use ReflectionProperty;
+
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/QueryBuilder.php';
+
+
 
 abstract class Model {
     protected ?string $table = null;
@@ -29,7 +39,11 @@ abstract class Model {
      */
     public function fill(array $attributes): void {
         foreach ($attributes as $key => $value) {
-            $this->attributes[$key] = $value;
+            if (property_exists($this, $key)) {
+                $this->$key = $value;
+            } else {
+                $this->attributes[$key] = $value;
+            }
         }
     }
 
@@ -37,6 +51,9 @@ abstract class Model {
      * Magic getter for attributes
      */
     public function __get(string $name): mixed {
+        // Prioritize explicit property if it exists (though usually handled by PHP access)
+        // If the property is protected/private, this might run? 
+        // But for our use case, we look in attributes array.
         return $this->attributes[$name] ?? null;
     }
 
@@ -44,7 +61,11 @@ abstract class Model {
      * Magic setter for attributes
      */
     public function __set(string $name, mixed $value): void {
-        $this->attributes[$name] = $value;
+        if (property_exists($this, $name)) {
+            $this->$name = $value;
+        } else {
+            $this->attributes[$name] = $value;
+        }
     }
 
     /**
@@ -110,17 +131,33 @@ abstract class Model {
      */
     public function save(): bool
     {
+        $data = $this->getAttributesForSave();
         $builder = new QueryBuilder(self::getConnection())
             ->table($this->getTable());
             
-        if (isset($this->attributes[$this->primaryKey])) {
+        // Check if primary key has a value (non-null)
+        // We check both public property and attributes array
+        $pkValue = null;
+        if (property_exists($this, $this->primaryKey) && isset($this->{$this->primaryKey})) {
+            $pkValue = $this->{$this->primaryKey};
+        } elseif (isset($this->attributes[$this->primaryKey])) {
+            $pkValue = $this->attributes[$this->primaryKey];
+        }
+
+        if ($pkValue) {
             // Update
-            $builder->where($this->primaryKey, $this->attributes[$this->primaryKey])
-                    ->update($this->attributes);
+            $builder->where($this->primaryKey, $pkValue)
+                    ->update($data);
         } else {
             // Insert
-            $id = $builder->insert($this->attributes);
-            $this->attributes[$this->primaryKey] = $id;
+            $id = $builder->insert($data);
+            
+            // Assign ID back to model
+            if (property_exists($this, $this->primaryKey)) {
+                $this->{$this->primaryKey} = $id;
+            } else {
+                $this->attributes[$this->primaryKey] = $id;
+            }
         }
         
         return true;
@@ -131,13 +168,20 @@ abstract class Model {
      */
     public function delete(): bool
     {
-        if (!isset($this->attributes[$this->primaryKey])) {
+        $pkValue = null;
+        if (property_exists($this, $this->primaryKey) && isset($this->{$this->primaryKey})) {
+            $pkValue = $this->{$this->primaryKey};
+        } elseif (isset($this->attributes[$this->primaryKey])) {
+            $pkValue = $this->attributes[$this->primaryKey];
+        }
+
+        if (!$pkValue) {
             return false;
         }
         
         return new QueryBuilder(self::getConnection())
             ->table($this->getTable())
-            ->where($this->primaryKey, $this->attributes[$this->primaryKey])
+            ->where($this->primaryKey, $pkValue)
             ->delete();
     }
     
@@ -145,6 +189,28 @@ abstract class Model {
      * Convert to array
      */
     public function toArray(): array {
-        return $this->attributes;
+        return $this->getAttributesForSave();
+    }
+
+    /**
+     * Helper to get all attributes (public properties + attributes array)
+     */
+    protected function getAttributesForSave(): array {
+        $data = $this->attributes;
+        
+        $reflect = new ReflectionClass($this);
+        $props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+        
+        foreach ($props as $prop) {
+            if (!$prop->isStatic()) {
+                $name = $prop->getName();
+                // Skip uninitialized properties
+                if (isset($this->$name)) {
+                     $data[$name] = $this->$name;
+                }
+            }
+        }
+        
+        return $data;
     }
 }

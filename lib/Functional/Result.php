@@ -29,6 +29,15 @@ abstract class Result {
             return self::err($e);
         }
     }
+
+    public function getOrElse($default)
+    {
+        return $this->match(
+            fn($v) => $v,
+            fn($e) => $default
+        );
+    }
+
 }
 
 class Ok extends Result {

@@ -6,7 +6,7 @@ use Functional\Option;
 use JetBrains\PhpStorm\NoReturn;
 
 abstract class Controller {
-    
+
     /**
      * Render a view with a ViewModel
      */
@@ -83,14 +83,13 @@ abstract class Controller {
         }
         return Option::none();
     }
-    
+
     /**
      * Get request data type-safely
      */
     protected function getPost(string $key, $default = null) {
         return $_POST[$key] ?? $default;
     }
-
     protected function getQuery(string $key, $default = null) {
         return $_GET[$key] ?? $default;
     }
