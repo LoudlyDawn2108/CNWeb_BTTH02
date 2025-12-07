@@ -9,6 +9,7 @@ require_once __DIR__ . '/../viewmodels/instructor/CourseFormViewModel.php';
 require_once __DIR__ . '/../viewmodels/instructor/CourseManageViewModel.php';
 require_once __DIR__ . '/../viewmodels/instructor/InstructorDashboardViewModel.php';
 require_once __DIR__ . '/../viewmodels/instructor/StudentListViewModel.php';
+require_once __DIR__ . '/../viewmodels/instructor/UploadMaterialsViewModel.php';
 
 use Functional\Collection;
 use Functional\Option;
@@ -27,6 +28,7 @@ use ViewModels\Instructor\CourseFormViewModel;
 use ViewModels\Instructor\CourseManageViewModel;
 use ViewModels\Instructor\InstructorDashboardViewModel;
 use ViewModels\Instructor\StudentListViewModel;
+use ViewModels\Instructor\UploadMaterialsViewModel;
 
 class InstructorController extends Controller
 {
@@ -421,5 +423,39 @@ class InstructorController extends Controller
             course: $course
         );
         $this->render('instructor/students/list', $viewModel);
+    }
+
+    /**
+     * View material upload page
+     */
+    public function uploadMaterials($courseId) {
+        $this->requireRole(User::ROLE_INSTRUCTOR);
+
+        $course = Course::find($courseId);
+        
+        if ($course) {
+             if ($course->instructor_id != $_SESSION['user_id']) {
+                $_SESSION['error'] = 'Bạn không có quyền quản lý.';
+                $this->redirect('/instructor/my-courses');
+            }
+
+            $lessons = Lesson::query()
+                ->where('course_id', $courseId)
+                ->orderBy('`order`', 'ASC')
+                ->get();
+            $lessons = array_map(fn($l) => $l->toArray(), $lessons);
+
+            $viewModel = new UploadMaterialsViewModel(
+                title: 'Tải tài liệu - ' . $course->title,
+                course: $course->toArray(),
+                lessons: $lessons
+            );
+            unset($_SESSION['success'], $_SESSION['error']);
+
+            $this->render('instructor/materials/upload', $viewModel);
+        } else {
+             $_SESSION['error'] = 'Khóa học không tồn tại.';
+             $this->redirect('/instructor/my-courses');
+        }
     }
 }
