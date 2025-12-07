@@ -9,6 +9,7 @@ require_once __DIR__ . '/../viewmodels/AuthViewModels.php';
 use JetBrains\PhpStorm\NoReturn;
 use Lib\Controller;
 use Models\User;
+use Models\UserTable;
 use ViewModels\AuthLoginViewModel;
 use ViewModels\AuthRegisterViewModel;
 
@@ -59,10 +60,11 @@ class AuthController extends Controller {
         $viewModel->handleRequest($_POST);
 
         if ($viewModel->modelState->isValid) {
-            $user = User::query()->where(User::USERNAME, $viewModel->username)->first();
+            $u = new UserTable();
+            $user = User::query()->where($u->USERNAME, $viewModel->username)->first();
 
             if (!$user) {
-                $user = User::query()->where(User::EMAIL, $viewModel->username)->first();
+                $user = User::query()->where($u->EMAIL, $viewModel->username)->first();
             }
 
             if ($user && password_verify($viewModel->password, $user->password) && $user->status == 1) {

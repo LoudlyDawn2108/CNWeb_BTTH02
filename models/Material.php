@@ -4,16 +4,20 @@ use Model;
 
 require_once __DIR__ . '/../lib/Model.php';
 
-class Material extends Model {
-    const TABLE = 'materials';
-    const ID = 'id';
-    const LESSON_ID = 'lesson_id';
-    const FILENAME = 'filename';
-    const FILE_PATH = 'file_path';
-    const FILE_TYPE = 'file_type';
-    const UPLOADED_AT = 'uploaded_at';
+class MaterialTable {
+    public function __toString(): string {
+        return 'materials';
+    }
+    public string $ID = 'materials.id';
+    public string $LESSON_ID = 'materials.lesson_id';
+    public string $FILENAME = 'materials.filename';
+    public string $FILE_PATH = 'materials.file_path';
+    public string $FILE_TYPE = 'materials.file_type';
+    public string $UPLOADED_AT = 'materials.uploaded_at';
+}
 
-    protected ?string $table = self::TABLE;
+class Material extends Model {
+    protected ?string $table = 'materials';
 
     public int $id;
     public int $lesson_id;

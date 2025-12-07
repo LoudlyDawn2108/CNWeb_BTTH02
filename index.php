@@ -53,6 +53,11 @@ try {
     // Home
     $router->get('/', [HomeController::class, 'index']);
     $router->get('/home', [HomeController::class, 'index']);
+
+    // Public Course
+    $router->get('/courses', [CourseController::class, 'index']);
+    $router->get('/courses/search', [CourseController::class, 'search']);
+    $router->get('/course/{id}', [CourseController::class, 'detail']);
     
     // Auth
     $router->get('/auth/login', [AuthController::class, 'showLogin']);

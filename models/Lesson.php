@@ -4,17 +4,21 @@ use Model;
 
 require_once __DIR__ . '/../lib/Model.php';
 
-class Lesson extends Model {
-    const TABLE = 'lessons';
-    const ID = 'id';
-    const COURSE_ID = 'course_id';
-    const TITLE = 'title';
-    const CONTENT = 'content';
-    const VIDEO_URL = 'video_url';
-    const ORDER = 'order';
-    const CREATED_AT = 'created_at';
+class LessonTable {
+    public function __toString(): string {
+        return 'lessons';
+    }
+    public string $ID = 'lessons.id';
+    public string $COURSE_ID = 'lessons.course_id';
+    public string $TITLE = 'lessons.title';
+    public string $CONTENT = 'lessons.content';
+    public string $VIDEO_URL = 'lessons.video_url';
+    public string $ORDER = 'lessons.order';
+    public string $CREATED_AT = 'lessons.created_at';
+}
 
-    protected ?string $table = self::TABLE;
+class Lesson extends Model {
+    protected ?string $table = 'lessons';
 
     public int $id;
     public int $course_id;

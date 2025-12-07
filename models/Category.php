@@ -4,14 +4,18 @@ use Model;
 
 require_once __DIR__ . '/../lib/Model.php';
 
-class Category extends Model {
-    const TABLE = 'categories';
-    const ID = 'id';
-    const NAME = 'name';
-    const DESCRIPTION = 'description';
-    const CREATED_AT = 'created_at';
+class CategoryTable {
+    public function __toString(): string {
+        return 'categories';
+    }
+    public string $ID = 'categories.id';
+    public string $NAME = 'categories.name';
+    public string $DESCRIPTION = 'categories.description';
+    public string $CREATED_AT = 'categories.created_at';
+}
 
-    protected ?string $table = self::TABLE;
+class Category extends Model {
+    protected ?string $table = 'categories';
 
     public int $id;
     public string $name;
