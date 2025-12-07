@@ -10,7 +10,7 @@ use ViewModels\CourseDetailViewModel;
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
             <li class="breadcrumb-item"><a href="/courses">Khóa học</a></li>
-            <li class="breadcrumb-item active"><?= htmlspecialchars($viewModel->course['title']) ?></li>
+            <li class="breadcrumb-item active"><?= htmlspecialchars($viewModel->course->title) ?></li>
         </ol>
     </nav>
 
@@ -147,18 +147,18 @@ use ViewModels\CourseDetailViewModel;
                 <?php foreach ($viewModel->relatedCourses as $related): ?>
                     <div class="col-md-6 col-lg-3">
                         <div class="card h-100 hover-shadow">
-                            <?php if ($related['image']): ?>
-                                <img src="/<?= htmlspecialchars($related['image']) ?>" class="card-img-top"
+                            <?php if ($related->image): ?>
+                                <img src="/<?= htmlspecialchars($related->image) ?>" class="card-img-top"
                                      style="height: 120px; object-fit: cover;" alt="related course image">
                             <?php endif; ?>
                             <div class="card-body">
-                                <h6 class="card-title"><?= htmlspecialchars($related['title']) ?></h6>
+                                <h6 class="card-title"><?= htmlspecialchars($related->title) ?></h6>
                                 <p class="text-muted small mb-0">
-                                    <?= $related['price'] > 0 ? number_format($related['price'], 0, ',', '.') . '₫' : 'Miễn phí' ?>
+                                    <?= $related->price > 0 ? number_format($related->price, 0, ',', '.') . '₫' : 'Miễn phí' ?>
                                 </p>
                             </div>
                             <div class="card-footer bg-white">
-                                <a href="/course/<?= $related['id'] ?>" class="btn btn-sm btn-outline-primary w-100">Xem chi tiết</a>
+                                <a href="/course/<?= $related->id ?>" class="btn btn-sm btn-outline-primary w-100">Xem chi tiết</a>
                             </div>
                         </div>
                     </div>
