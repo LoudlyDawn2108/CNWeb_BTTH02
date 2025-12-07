@@ -501,6 +501,99 @@ class AdminController extends Controller
     }
 
     /**
+     * Statistics Report - Comprehensive analytics and reports
+     */
+    public function statistics(): void
+    {
+        // User Statistics
+        $userStats = [
+            'total' => User::query()->count(),
+            'students' => User::query()->where('role', User::ROLE_STUDENT)->count(),
+            'instructors' => User::query()->where('role', User::ROLE_INSTRUCTOR)->count(),
+            'admins' => User::query()->where('role', User::ROLE_ADMIN)->count(),
+            'active' => User::query()->where('status', 1)->count(),
+            'inactive' => User::query()->where('status', 0)->count(),
+        ];
+
+        // Course Statistics
+        $courseStats = [
+            'total' => Course::query()->count(),
+            'approved' => Course::query()->where('status', 'approved')->count(),
+            'pending' => Course::query()->where('status', 'pending')->count(),
+            'rejected' => Course::query()->where('status', 'rejected')->count(),
+        ];
+
+        // Enrollment Statistics
+        $enrollmentStats = [
+            'total' => Enrollment::query()->count(),
+            'active' => Enrollment::query()->where('status', 'active')->count(),
+            'completed' => Enrollment::query()->where('status', 'completed')->count(),
+        ];
+
+        // Category Statistics
+        $categoryStats = Category::query()
+            ->select(['c.id', 'c.name', 'COUNT(co.id) as course_count'])
+            ->table('categories c')
+            ->leftJoin('courses co', 'c.id', '=', 'co.category_id')
+            ->groupBy('c.id', 'c.name')
+            ->orderBy('course_count', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $categoryStats = array_map(fn($c) => $c->toArray(), $categoryStats);
+
+        // Top Instructors by course count
+        $topInstructors = User::query()
+            ->select(['u.*', 'COUNT(c.id) as course_count'])
+            ->table('users u')
+            ->leftJoin('courses c', 'u.id', '=', 'c.instructor_id')
+            ->where('u.role', User::ROLE_INSTRUCTOR)
+            ->groupBy('u.id')
+            ->orderBy('course_count', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $topInstructors = array_map(fn($i) => $i->toArray(), $topInstructors);
+
+        // Popular Courses by enrollment count
+        $popularCourses = Course::query()
+            ->select(['c.*', 'COUNT(e.id) as enrollment_count', 'u.fullname as instructor_name'])
+            ->table('courses c')
+            ->leftJoin('enrollments e', 'c.id', '=', 'e.course_id')
+            ->leftJoin('users u', 'c.instructor_id', '=', 'u.id')
+            ->where('c.status', 'approved')
+            ->groupBy('c.id')
+            ->orderBy('enrollment_count', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $popularCourses = array_map(fn($c) => $c->toArray(), $popularCourses);
+
+        // Monthly user growth (last 6 months)
+        $monthlyUsers = User::query()
+            ->select(['DATE_FORMAT(created_at, \'%Y-%m\') as month', 'COUNT(*) as count'])
+            ->whereRaw('created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)')
+            ->groupBy('month')
+            ->orderBy('month', 'ASC')
+            ->get();
+
+        $monthlyUsers = array_map(fn($m) => $m->toArray(), $monthlyUsers);
+
+        $viewModel = new \ViewModels\AdminStatisticsViewModel(
+            title: "Th\u1ed1ng k\u00ea & B\u00e1o c\u00e1o - Feetcode",
+            userStats: $userStats,
+            courseStats: $courseStats,
+            enrollmentStats: $enrollmentStats,
+            categoryStats: $categoryStats,
+            topInstructors: $topInstructors,
+            popularCourses: $popularCourses,
+            monthlyUsers: $monthlyUsers
+        );
+
+        $this->render('admin/reports/statistics', $viewModel);
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void

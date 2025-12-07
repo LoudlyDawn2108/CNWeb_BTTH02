@@ -53,3 +53,17 @@ class AdminCategoryFormViewModel extends ViewModel
         public bool $isEdit
     ) {}
 }
+
+class AdminStatisticsViewModel extends ViewModel
+{
+    public function __construct(
+        public string $title,
+        public array $userStats,
+        public array $courseStats,
+        public array $enrollmentStats,
+        public array $categoryStats,
+        public array $topInstructors,
+        public array $popularCourses,
+        public array $monthlyUsers
+    ) {}
+}
