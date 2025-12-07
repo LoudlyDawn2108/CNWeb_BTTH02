@@ -357,6 +357,81 @@ class AdminController extends Controller
     }
 
     /**
+     * Approve Course - Change course status (approve/reject)
+     */
+    public function approveCourse(int $id): void
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            // Get action from request body
+            $input = json_decode(file_get_contents('php://input'), true);
+            $action = $input['action'] ?? 'approve'; // approve or reject
+            $rejectReason = $input['reason'] ?? null;
+            
+            // Validate action
+            if (!in_array($action, ['approve', 'reject'])) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'H\u00e0nh \u0111\u1ed9ng kh\u00f4ng h\u1ee3p l\u1ec7'
+                ]);
+                return;
+            }
+            
+            // Find course
+            $course = Course::find($id);
+            
+            if (!$course) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Kh\u00f4ng t\u00ecm th\u1ea5y kh\u00f3a h\u1ecdc'
+                ]);
+                return;
+            }
+            
+            // Check if course is pending
+            if ($course->status !== 'pending') {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Kh\u00f3a h\u1ecdc n\u00e0y \u0111\u00e3 \u0111\u01b0\u1ee3c x\u1eed l\u00fd r\u1ed3i'
+                ]);
+                return;
+            }
+            
+            // Update course status
+            if ($action === 'approve') {
+                $course->status = 'approved';
+                $message = 'Ph\u00ea duy\u1ec7t kh\u00f3a h\u1ecdc th\u00e0nh c\u00f4ng';
+                $sessionMessage = "\u0110\u00e3 ph\u00ea duy\u1ec7t kh\u00f3a h\u1ecdc '{$course->title}'";
+            } else {
+                $course->status = 'rejected';
+                $message = 'T\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc th\u00e0nh c\u00f4ng';
+                $sessionMessage = "\u0110\u00e3 t\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc '{$course->title}'";
+                
+                if ($rejectReason) {
+                    $sessionMessage .= ". L\u00fd do: {$rejectReason}";
+                }
+            }
+            
+            $course->save();
+            
+            $_SESSION['success'] = $sessionMessage;
+            
+            echo json_encode([
+                'success' => true,
+                'message' => $message,
+                'new_status' => $course->status
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void

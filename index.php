@@ -79,6 +79,8 @@ try {
     $router->get('/admin/categories/{id}/edit', [AdminController::class, 'editCategory']);
     $router->post('/admin/categories/{id}/delete', [AdminController::class, 'deleteCategory']);
 
+    // Admin Course Approval
+    $router->post('/admin/courses/{id}/approve', [AdminController::class, 'approveCourse']);
 
     // Dispatch
     $router->dispatch($_SERVER['REQUEST_METHOD'], $requestUri);
