@@ -8,8 +8,8 @@ class CourseManageViewModel {
     public Collection $lessons;
     public object $stats;
 
-    public function __construct(array $courseData, Collection $lessonsCollection) {
-        $this->course = (object) $courseData;
+    public function __construct(object $courseData, Collection $lessonsCollection) {
+        $this->course = $courseData;
 
         $this->lessons = $lessonsCollection->map(function($l) {
             return (object)[

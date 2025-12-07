@@ -1,5 +1,4 @@
 <?php
-namespace Controllers;
 
 use JetBrains\PhpStorm\NoReturn;
 use Lib\Controller;
@@ -23,7 +22,7 @@ class LessonController extends Controller {
         $this->render('instructor/lessons/create', $viewModel);
     }
 
-    // 2. Lưu bài học (Sửa lại theo Lib\Model)
+    // 2. Lưu bài học (Sửa lại theo lib\Model)
     public function store($courseId): void
     {
         $data = [
@@ -35,11 +34,11 @@ class LessonController extends Controller {
         ];
 
         try {
-            // Lib\Model::create trả về Object, không phải Result
+            // lib\Model::create trả về Object, không phải Result
             Lesson::create($data);
 
             $this->setSuccessMessage('Bài học đã được tạo');
-            $this->redirect("/instructor/course/$courseId/manage");
+            $this->redirect("/instructor/courses/$courseId/manage");
         } catch (\Exception $e) {
             $this->setErrorMessage('Lỗi: ' . $e->getMessage());
             $this->redirect("/instructor/courses/$courseId/lessons/create");
@@ -49,7 +48,7 @@ class LessonController extends Controller {
     // 3. Form sửa bài học
     public function edit($id): void
     {
-        // Lib\Model::find trả về Object hoặc Null
+        // lib\Model::find trả về Object hoặc Null
         $lesson = Lesson::find($id);
 
         if (!$lesson) {
@@ -57,8 +56,8 @@ class LessonController extends Controller {
             $this->redirect('/instructor/dashboard');
         }
 
-        // Lấy tài liệu (Giả sử Material model cũng kế thừa Lib\Model)
-        // Lưu ý: Lib\Model::all() trả về array, bạn cần ép sang Collection nếu ViewModel cần
+        // Lấy tài liệu (Giả sử Material model cũng kế thừa lib\Model)
+        // Lưu ý: lib\Model::all() trả về array, bạn cần ép sang Collection nếu ViewModel cần
 
         $materialModel = new Material();
 
@@ -83,7 +82,7 @@ class LessonController extends Controller {
 
     }
 
-    // 4. Update bài học (Sửa lại theo Lib\Model)
+    // 4. Update bài học (Sửa lại theo lib\Model)
     #[NoReturn]
     public function update($id): void
     {
@@ -104,10 +103,10 @@ class LessonController extends Controller {
 
         if ($lesson->save()) {
             $this->setSuccessMessage('Bài học đã được cập nhật');
-            $this->redirect("/instructor/course/{$lesson->course_id}/manage");
+            $this->redirect("/instructor/courses/{$lesson->course_id}/manage");
         } else {
             $this->setErrorMessage('Lỗi khi lưu');
-            $this->redirect("/instructor/lesson/$id/edit");
+            $this->redirect("/instructor/lessons/$id/edit");
         }
     }
 

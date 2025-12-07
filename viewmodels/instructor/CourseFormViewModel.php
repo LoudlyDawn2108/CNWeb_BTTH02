@@ -20,7 +20,7 @@ class CourseFormViewModel {
         $this->course->match(
             function($courseData) {
                 $this->title = 'Chỉnh sửa khóa học: ' . $courseData->title;
-                $this->actionUrl = '/instructor/course/' . $courseData->id . '/update';
+                $this->actionUrl = '/instructor/courses/' . $courseData->id . '/update';
             },
             function() {
                 $this->title = 'Tạo khóa học mới';

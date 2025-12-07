@@ -1,7 +1,5 @@
 <?php
 
-namespace Controllers;
-
 use Functional\Collection;
 use Functional\Option;
 use Functional\Result;
@@ -129,7 +127,7 @@ class InstructorController extends Controller
 
                 $courseModel->getById($id)->match(
                     function ($course) use ($user, $categoryModel) {
-                        if ($course['instructor_id'] != $user['id']) {
+                        if ($course->instructor_id != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
                         }
@@ -151,7 +149,7 @@ class InstructorController extends Controller
         );
     }
 
-    public function updateCourse($id)
+    public function updateCourse($id): void
     {
         $this->user()->match(
             function ($user) use ($id) {
@@ -159,7 +157,7 @@ class InstructorController extends Controller
 
                 $courseModel->getById($id)->match(
                     function ($course) use ($user, $courseModel, $id) {
-                        if ($course['instructor_id'] != $user['id']) {
+                        if ($course->instructor_id != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
                         }
@@ -174,20 +172,38 @@ class InstructorController extends Controller
                             'price' => $this->getPost('price')
                         ];
 
-                        // Chỉ update thumbnail nếu có upload mới
-                        $imageResult->match(
-                            fn($img) => $data['thumbnail'] = $img,
-                            fn() => null
-                        );
+                        // Xử lý upload ảnh mới
+                        // Kiểm tra xem có file upload không
+                        if (!empty($_FILES['image']['name'])) {
+                            $imageResult = $this->handleImageUpload($_FILES['image']);
+
+                            $imageResult->match(
+                                function($newImage) use (&$data, $course) {
+                                    // Xóa ảnh cũ nếu tồn tại
+                                    if (!empty($course->image)) {
+                                        $oldImagePath = BASE_PATH . '/assets/uploads/courses/' . $course->image;
+                                        if (file_exists($oldImagePath)) {
+                                            unlink($oldImagePath);
+                                        }
+                                    }
+                                    // Gán ảnh mới
+                                    $data['image'] = $newImage;
+                                },
+                                function() {
+                                    // Upload thất bại, giữ nguyên ảnh cũ
+                                    error_log('Failed to upload new image');
+                                }
+                            );
+                        }
 
                         $courseModel->updateCourse($id, $data)->match( // ← Đổi thành updateCourse
                             function () use ($id) {
                                 $this->setSuccessMessage('Khóa học đã được cập nhật');
-                                $this->redirect("/instructor/course/$id/manage");
+                                $this->redirect("/instructor/dashboard");
                             },
                             function () use ($id) {
                                 $this->setErrorMessage('Không thể cập nhật khóa học');
-                                $this->redirect("/instructor/course/$id/edit");
+                                $this->redirect("/instructor/courses/$id/edit");
                             }
                         );
                     },
@@ -210,15 +226,15 @@ class InstructorController extends Controller
 
                 $courseModel->getById($id)->match(
                     function ($course) use ($user, $lessonModel) {
-                        if ($course['instructor_id'] != $user['id']) {
+                        if ($course->instructor_id != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
                         }
 
-                        $lessons = $lessonModel->getByCourse($course['id']);
+                        $lessons = $lessonModel->getByCourse($course->id);
 
                         $viewModel = new CourseManageViewModel($course, $lessons);
-                        $this->render('instructor/course/manage', $viewModel);
+                        $this->render('instructor/courses/manage', $viewModel);
                     },
                     function () {
                         $this->setErrorMessage('Không tìm thấy khóa học');
@@ -230,7 +246,7 @@ class InstructorController extends Controller
         );
     }
 
-    public function deleteCourse($id)
+    public function deleteCourse($id): void
     {
         $this->user()->match(
             function ($user) use ($id) {
@@ -238,7 +254,7 @@ class InstructorController extends Controller
 
                 $courseModel->getById($id)->match(
                     function ($course) use ($user, $courseModel, $id) {
-                        if ($course['instructor_id'] != $user['id']) {
+                        if ($course->instructor_id != $user['id']) {
                             http_response_code(403);
                             die('Không có quyền truy cập');
                         }

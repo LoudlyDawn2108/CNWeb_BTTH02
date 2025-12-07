@@ -3,9 +3,6 @@
  * Online Course Management System
  */
 
-use Controllers\InstructorController;
-use Controllers\LessonController;
-
 session_start();
 
 // =================================================================
@@ -13,7 +10,7 @@ session_start();
 // Xóa đoạn này khi nộp bài hoặc khi ghép code với nhóm
 // =================================================================
 if (!isset($_SESSION['user_id'])) {
-    $_SESSION['user_id'] = 999;        // Phải trùng với ID trong Database ở Bước 1
+    $_SESSION['user_id'] = 2;        // Phải trùng với ID trong Database ở Bước 1
     $_SESSION['role'] = 1;             // 1 = Giảng viên
     $_SESSION['fullname'] = 'GV Test'; // Tên hiển thị trên menu
     $_SESSION['email'] = 'gv@test.com';
@@ -24,13 +21,13 @@ if (!isset($_SESSION['user_id'])) {
 // Define base path
 define('BASE_PATH', __DIR__);
 
-// Autoload Controllers
+// Autoload controllers
 spl_autoload_register(function ($class) {
     // Handle namespaced classes (e.g., Functional\Option)
     $classPath = str_replace('\\', '/', $class);
 
-    if (str_starts_with($class, 'Lib\\')) {
-        $libClassPath = str_replace('Lib\\', '', $class);
+    if (str_starts_with($class, 'lib\\')) {
+        $libClassPath = str_replace('lib\\', '', $class);
         $libClassPath = str_replace('\\', '/', $libClassPath);
         $libFile = BASE_PATH . '/lib/' . $libClassPath . '.php';
         if (file_exists($libFile)) {
@@ -39,31 +36,31 @@ spl_autoload_register(function ($class) {
         }
     }
 
-    // Xử lý namespace Controllers\
-    if (str_starts_with($class, 'Controllers\\')) {
-        $className = str_replace('Controllers\\', '', $class);
-        $file = BASE_PATH . '/Controllers/' . $className . '.php';
+    // Xử lý namespace controllers\
+    if (str_starts_with($class, 'controllers\\')) {
+        $className = str_replace('controllers\\', '', $class);
+        $file = BASE_PATH . '/controllers/' . $className . '.php';
         if (file_exists($file)) {
             require_once $file;
             return;
         }
     }
 
-    // Xử lý namespace Models\
-    if (str_starts_with($class, 'Models\\')) {
-        $className = str_replace('Models\\', '', $class);
-        $file = BASE_PATH . '/Models/' . $className . '.php';
+    // Xử lý namespace models\
+    if (str_starts_with($class, 'models\\')) {
+        $className = str_replace('models\\', '', $class);
+        $file = BASE_PATH . '/models/' . $className . '.php';
         if (file_exists($file)) {
             require_once $file;
             return;
         }
     }
 
-    // Xử lý namespace ViewModels\
-    if (str_starts_with($class, 'ViewModels\\')) {
-        $classPath = str_replace('ViewModels\\', '', $class);
+    // Xử lý namespace viewmodels\
+    if (str_starts_with($class, 'viewmodels\\')) {
+        $classPath = str_replace('viewmodels\\', '', $class);
         $classPath = str_replace('\\', '/', $classPath);
-        $file = BASE_PATH . '/ViewModels/' . $classPath . '.php';
+        $file = BASE_PATH . '/viewmodels/' . $classPath . '.php';
         if (file_exists($file)) {
             require_once $file;
             return;
@@ -83,8 +80,8 @@ spl_autoload_register(function ($class) {
     $classPath = str_replace('\\', '/', $class);
 
     $paths = [
-        BASE_PATH . '/Controllers/' . $class . '.php',
-        BASE_PATH . '/Models/' . $class . '.php',
+        BASE_PATH . '/controllers/' . $class . '.php',
+        BASE_PATH . '/models/' . $class . '.php',
         BASE_PATH . '/config/' . $class . '.php',
         BASE_PATH . '/lib/' . $classPath . '.php',
         BASE_PATH . '/' . $classPath . '.php'

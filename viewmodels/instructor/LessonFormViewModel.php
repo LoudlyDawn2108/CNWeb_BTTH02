@@ -19,7 +19,7 @@ class LessonFormViewModel {
         $this->lesson->match(
             function($lessonData) {
                 $this->pageTitle = 'Sửa bài học: ' . $lessonData->title;
-                $this->actionUrl = '/instructor/lesson/' . $lessonData->id . '/update';
+                $this->actionUrl = '/instructor/lessons/' . $lessonData->id . '/update';
             },
             function() {
                 $this->pageTitle = 'Thêm bài học mới';

@@ -39,7 +39,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title">Thu nhập (Tạm tính)</h6>
-                                <h2 class="fw-bold mb-0">0 ₫</h2> </div>
+                                <h2 class="fw-bold mb-0"> <?= $model->totalRevenue ?> </h2> </div>
                             <i class="bi bi-cash-coin fs-1 opacity-50"></i>
                         </div>
                     </div>
@@ -64,6 +64,7 @@
                             <th>Giá</th>
                             <th>Trạng thái</th>
                             <th>Học viên</th>
+                            <th>Doanh thu</th>
                             <th class="text-end">Hành động</th>
                         </tr>
                         </thead>
@@ -91,6 +92,11 @@
                                         </span>
                                     </td>
                                     <td><?= $course->enrollmentCount ?></td>
+                                    <td>
+                                        <div class="fw-bold text-success">
+                                            <?= $course->revenueFormatted ?>
+                                        </div>
+                                    </td>
                                     <td class="text-end">
                                         <a href="/instructor/courses/<?= $course->id ?>/manage"
                                            class="btn btn-sm btn-info text-white" title="Quản lý bài học">

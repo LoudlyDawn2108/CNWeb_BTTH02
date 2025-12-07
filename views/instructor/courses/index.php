@@ -23,7 +23,8 @@
                         <th>Giá</th>
                         <th>Trạng thái</th>
                         <th>Học viên</th>
-                        <th>Doanh thu</th> <th class="text-end pe-4">Hành động</th>
+                        <th>Doanh thu</th>
+                        <th class="text-end pe-4">Hành động</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -65,6 +66,7 @@
                                         <?= $course->revenueFormatted ?>
                                     </div>
                                 </td>
+
                                 <td class="text-end pe-4">
                                     <a href="/instructor/courses/<?= $course->id ?>/manage"
                                        class="btn btn-sm btn-info text-white me-1" title="Quản lý bài học">

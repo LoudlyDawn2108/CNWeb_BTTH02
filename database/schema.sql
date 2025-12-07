@@ -168,19 +168,19 @@ INSERT INTO lessons (course_id, title, content, video_url, `order`) VALUES
 (6, 'Python for Data', 'Numpy and pandas basics.', 'https://example.com/videos/ds1.mp4', 1),
 (6, 'Data Cleaning', 'Handling missing data and transformations.', 'https://example.com/videos/ds2.mp4', 2),
 (6, 'Visualization', 'Matplotlib and Seaborn examples.', 'https://example.com/videos/ds3.mp4', 3),
-(6, 'Feature Engineering', 'Creating useful features for Models.', 'https://example.com/videos/ds4.mp4', 4),
+(6, 'Feature Engineering', 'Creating useful features for models.', 'https://example.com/videos/ds4.mp4', 4),
 (6, 'Model Evaluation', 'Metrics and validation techniques.', 'https://example.com/videos/ds5.mp4', 5);
 
 -- Machine Learning Advanced (course_id = 7)
 INSERT INTO lessons (course_id, title, content, video_url, `order`) VALUES
 (7, 'Advanced Regression', 'Regularization and ensemble methods.', 'https://example.com/videos/ml1.mp4', 1),
 (7, 'Neural Networks', 'Deep learning fundamentals.', 'https://example.com/videos/ml2.mp4', 2),
-(7, 'Model Deployment', 'Serving Models and CI/CD for ML.', 'https://example.com/videos/ml3.mp4', 3),
+(7, 'Model Deployment', 'Serving models and CI/CD for ML.', 'https://example.com/videos/ml3.mp4', 3),
 (7, 'Optimization Tricks', 'Hyperparameter tuning and speedups.', 'https://example.com/videos/ml4.mp4', 4);
 
 -- Cybersecurity Fundamentals (course_id = 8)
 INSERT INTO lessons (course_id, title, content, video_url, `order`) VALUES
-(8, 'Security Basics', 'CIA triad and threat Models.', 'https://example.com/videos/sec1.mp4', 1),
+(8, 'Security Basics', 'CIA triad and threat models.', 'https://example.com/videos/sec1.mp4', 1),
 (8, 'OWASP Top 10', 'Common web vulnerabilities and fixes.', 'https://example.com/videos/sec2.mp4', 2),
 (8, 'Secure Coding', 'Practical guidelines and examples.', 'https://example.com/videos/sec3.mp4', 3);
 

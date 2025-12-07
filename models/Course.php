@@ -42,7 +42,7 @@ class Course extends Model {
 
     private $conn;
 
-    // 2. Không cần khai báo fillable nếu Lib\Model chưa hỗ trợ lọc
+    // 2. Không cần khai báo fillable nếu lib\Model chưa hỗ trợ lọc
     // Nhưng cứ để đây để sau này nâng cấp base model
     protected array $fillable = [
         'title', 'description', 'instructor_id',
@@ -89,7 +89,7 @@ class Course extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC); // Trả về mảng array thường
     }
     public function getById(int $id): Option {
-        // 1. Gọi hàm find có sẵn của Lib\Model (Trả về Object hoặc Null)
+        // 1. Gọi hàm find có sẵn của lib\Model (Trả về Object hoặc Null)
         $course = self::find($id);
 
         // 2. Bọc kết quả vào Option
@@ -125,7 +125,7 @@ class Course extends Model {
 //    }
     public function createCourse(array $data): Option {
         try {
-            // 1. Gọi hàm create của Lib\Model (trả về Object)
+            // 1. Gọi hàm create của lib\Model (trả về Object)
             $course = self::create($data);
 
             // 2. Bọc kết quả vào Option để Controller dùng được hàm ->match()
@@ -141,7 +141,7 @@ class Course extends Model {
      */
     public function updateCourse(int $id, array $data): Option {
         try {
-            // 1. Tìm bản ghi (dùng hàm find của Lib\Model)
+            // 1. Tìm bản ghi (dùng hàm find của lib\Model)
             $course = self::find($id);
 
             if (!$course) return Option::none();
@@ -151,7 +151,7 @@ class Course extends Model {
                 $course->$key = $value;
             }
 
-            // 3. Lưu (dùng hàm save của Lib\Model)
+            // 3. Lưu (dùng hàm save của lib\Model)
             $course->save();
 
             return Option::some(true);

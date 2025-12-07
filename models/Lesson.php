@@ -7,7 +7,7 @@ namespace Models;
 use Lib\Model;
 use Functional\Collection;
 use Functional\Option;
-// Models/Lesson.php
+// models/Lesson.php
 
 use PDO;
 require_once __DIR__ . '/../lib/Model.php';
