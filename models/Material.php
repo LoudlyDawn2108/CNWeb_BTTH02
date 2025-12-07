@@ -1,8 +1,16 @@
 <?php
+/**
+ * Material Model
+ * Handles database operations for course materials (files)
+ */
 namespace Models;
-use Model;
 
+
+use Functional\Collection;
+use lib\Model;
+use PDO;
 require_once __DIR__ . '/../lib/Model.php';
+require_once __DIR__ . '/../config/Database.php';
 
 class MaterialTable {
     public function __toString(): string {
@@ -26,13 +34,17 @@ class Material extends Model {
     public ?string $file_type = null;
     public ?string $uploaded_at = null;
 
-    public static function getFileType($filename): string
-    {
+    public function getByLesson(int $lessonId): Collection {
+        $stmt = $this->db->prepare("SELECT * FROM materials WHERE lesson_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$lessonId]);
+        return Collection::make($stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    public static function getFileType($filename): string {
         return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
     }
 
-    public static function isAllowedType($fileType): bool
-    {
+    public static function isAllowedType($fileType): bool {
         $allowedTypes = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'zip', 'rar'];
         return in_array(strtolower($fileType), $allowedTypes);
     }

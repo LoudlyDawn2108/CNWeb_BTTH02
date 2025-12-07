@@ -1,7 +1,15 @@
 <?php
+/**
+ * Lesson Model
+ * Handles all lesson-related database operations
+ */
 namespace Models;
-use Model;
+use Lib\Model;
+use Functional\Collection;
+use Functional\Option;
+// models/Lesson.php
 
+use PDO;
 require_once __DIR__ . '/../lib/Model.php';
 
 class LessonTable {
@@ -27,4 +35,21 @@ class Lesson extends Model {
     public ?string $video_url = null;
     public int $order = 0;
     public ?string $created_at = null;
+
+    private $conn;
+    public function getByCourse(int $courseId): Collection {
+        // Sửa $this->db thành self::getConnection()
+        $stmt = self::getConnection()->prepare("
+        SELECT l.*, 
+               COUNT(m.id) as material_count
+        FROM lessons l
+        LEFT JOIN materials m ON l.id = m.lesson_id
+        WHERE l.course_id = ?
+        GROUP BY l.id
+        ORDER BY l.order ASC
+    ");
+        $stmt->execute([$courseId]);
+        return Collection::make($stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
 }
+?>

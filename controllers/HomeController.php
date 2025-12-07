@@ -25,7 +25,7 @@ class HomeController extends Controller
         $featuredCourses = Course::query()
             ->select([
                 "$c.*", 
-                "$cat->NAME as category_name", 
+                "$cat->NAME as category_name",
                 "$u->FULLNAME as instructor_name"
             ])
             ->table($c)

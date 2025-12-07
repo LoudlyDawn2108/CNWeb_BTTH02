@@ -1,7 +1,17 @@
 <?php
 
+namespace Lib;
+
+use Database;
+use PDO;
+use QueryBuilder;
+use ReflectionClass;
+use ReflectionProperty;
+
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/QueryBuilder.php';
+
+
 
 abstract class Model {
     protected ?string $table = null;
