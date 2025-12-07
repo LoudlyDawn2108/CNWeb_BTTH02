@@ -30,7 +30,7 @@ use ViewModels\CourseListViewModel;
                                 <?php foreach ($viewModel->categories as $cat): ?>
                                     <option value="<?= $cat->id ?>"
                                             <?= ($viewModel->filters['category_id'] ?? '') == $cat->id ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($cat->name) ?>categories
+                                        <?= htmlspecialchars($cat->name) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

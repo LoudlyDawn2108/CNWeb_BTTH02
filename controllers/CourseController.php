@@ -64,8 +64,11 @@ class CourseController extends Controller {
         }
         if ($search) {
             $query->whereRaw(
-                "($c->TITLE LIKE :search OR $c->DESCRIPTION LIKE :search)",
-                [":search" => '%' . $search . '%']);
+                "($c->TITLE LIKE :search_title OR $c->DESCRIPTION LIKE :search_desc)",
+                [
+                    ":search_title" => '%' . $search . '%',
+                    ":search_desc" => '%' . $search . '%'
+                ]);
         }
 
         // Clone query for counting total results (simplified count)
@@ -200,12 +203,14 @@ class CourseController extends Controller {
                              ->leftJoin($u, $c->INSTRUCTOR_ID, '=', $u->ID)
                              ->where($c->STATUS, 'approved')
                              ->whereRaw(
-                                 "($c->TITLE LIKE :keyword OR $c->DESCRIPTION LIKE :keyword)",
-                                 [':keyword' => '%' . $keyword . '%'])
+                                 "($c->TITLE LIKE :keyword_title OR $c->DESCRIPTION LIKE :keyword_desc)",
+                                 [
+                                     ':keyword_title' => '%' . $keyword . '%',
+                                     ':keyword_desc' => '%' . $keyword . '%'
+                                 ])
                              ->orderBy($c->CREATED_AT, 'DESC')
                              ->limit(20)
-                             ->get();
-            $courses = array_map(fn($c) => $c->toArray(), $courses);
+                             ->get(CourseView::class);
         }
 
         $categories = Category::all();
