@@ -306,47 +306,4 @@ class EnrollmentController extends Controller {
             exit;
         }
     }
-
-    /**
-     * Update progress manually
-     */
-    public function updateProgress() {
-        $this->requireRole(User::ROLE_STUDENT);
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('/student/my-courses');
-        }
-
-        $enrollmentId = intval($this->getPost('enrollment_id', 0));
-        $progress = intval($this->getPost('progress', 0));
-
-        $enrollment = Enrollment::find($enrollmentId);
-
-        if ($enrollment) {
-            if ($enrollment->student_id != $_SESSION['user_id']) {
-                $this->setErrorMessage('Không có quyền truy cập.');
-                $this->redirect('/student/my-courses');
-            }
-
-            $progress = max(0, min(100, $progress));
-            $enrollment->progress = $progress;
-            if ($progress >= 100) {
-                $enrollment->status = Enrollment::STATUS_COMPLETED;
-            } else {
-                // Keep current status if not completed, or set to active? 
-                // Usually just check completion.
-                if ($enrollment->status == Enrollment::STATUS_COMPLETED && $progress < 100) {
-                    $enrollment->status = Enrollment::STATUS_ACTIVE;
-                }
-            }
-            $enrollment->save();
-
-            $this->setSuccessMessage('Đã cập nhật tiến độ.');
-            $this->redirect('/student/course/' . $enrollment->course_id . '/progress');
-        } else {
-             $this->setErrorMessage('Dữ liệu không tồn tại.');
-             $this->redirect('/student/my-courses');
-        }
-        exit;
-    }
 }
