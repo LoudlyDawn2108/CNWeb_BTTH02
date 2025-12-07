@@ -48,13 +48,17 @@ class Router {
 
     private function handleNotFound(): void {
         http_response_code(404);
-        echo '<!DOCTYPE html><html lang="vi"><head><title>404 - Page Not Found</title>
-              <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-              </head><body class="bg-light">
-              <div class="container text-center py-5">
-              <h1 class="display-1">404</h1>
-              <p class="lead">Trang không tồn tại</p>
-              <a href="/" class="btn btn-primary">Về trang chủ</a>
-              </div></body></html>';
+        if (file_exists(BASE_PATH . '/views/errors/404.php')) {
+            require BASE_PATH . '/views/errors/404.php';
+        } else {
+            echo '<!DOCTYPE html><html lang="vi"><head><title>404 - Page Not Found</title>
+                  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+                  </head><body class="bg-light">
+                  <div class="container text-center py-5">
+                  <h1 class="display-1">404</h1>
+                  <p class="lead">Trang không tồn tại</p>
+                  <a href="/" class="btn btn-primary">Về trang chủ</a>
+                  </div></body></html>';
+        }
     }
 }
