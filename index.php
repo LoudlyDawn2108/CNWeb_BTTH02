@@ -81,6 +81,7 @@ try {
 
     // Admin Course Approval
     $router->post('/admin/courses/{id}/approve', [AdminController::class, 'approveCourse']);
+    $router->post('/admin/courses/{id}/reject', [AdminController::class, 'rejectCourse']);
 
     // Dispatch
     $router->dispatch($_SERVER['REQUEST_METHOD'], $requestUri);

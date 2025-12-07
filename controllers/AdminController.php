@@ -432,6 +432,75 @@ class AdminController extends Controller
     }
 
     /**
+     * Reject Course - Explicitly reject a course with reason
+     */
+    public function rejectCourse(int $id): void
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            // Get reason from request body
+            $input = json_decode(file_get_contents('php://input'), true);
+            $reason = trim($input['reason'] ?? '');
+            
+            // Validate reason is provided
+            if (empty($reason)) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Vui l\u00f2ng nh\u1eadp l\u00fd do t\u1eeb ch\u1ed1i'
+                ]);
+                return;
+            }
+            
+            if (strlen($reason) < 10) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'L\u00fd do t\u1eeb ch\u1ed1i ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t 10 k\u00fd t\u1ef1'
+                ]);
+                return;
+            }
+            
+            // Find course
+            $course = Course::find($id);
+            
+            if (!$course) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Kh\u00f4ng t\u00ecm th\u1ea5y kh\u00f3a h\u1ecdc'
+                ]);
+                return;
+            }
+            
+            // Check if course is pending
+            if ($course->status !== 'pending') {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Kh\u00f3a h\u1ecdc n\u00e0y \u0111\u00e3 \u0111\u01b0\u1ee3c x\u1eed l\u00fd r\u1ed3i'
+                ]);
+                return;
+            }
+            
+            // Update course status to rejected
+            $course->status = 'rejected';
+            $course->save();
+            
+            $_SESSION['success'] = "\u0110\u00e3 t\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc '{$course->title}'. L\u00fd do: {$reason}";
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'T\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc th\u00e0nh c\u00f4ng',
+                'new_status' => 'rejected'
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void
