@@ -1,16 +1,23 @@
 <?php
+namespace Models;
+use Lib\Model;
+
 require_once __DIR__ . '/../lib/Model.php';
 
-class Enrollment extends Model {
-    const TABLE = 'enrollments';
-    const ID = 'id';
-    const COURSE_ID = 'course_id';
-    const STUDENT_ID = 'student_id';
-    const ENROLLED_DATE = 'enrolled_date';
-    const STATUS = 'status';
-    const PROGRESS = 'progress';
+class EnrollmentTable {
+    public function __toString(): string {
+        return 'enrollments';
+    }
+    public string $ID = 'enrollments.id';
+    public string $COURSE_ID = 'enrollments.course_id';
+    public string $STUDENT_ID = 'enrollments.student_id';
+    public string $ENROLLED_DATE = 'enrollments.enrolled_date';
+    public string $STATUS = 'enrollments.status';
+    public string $PROGRESS = 'enrollments.progress';
+}
 
-    protected ?string $table = self::TABLE;
+class Enrollment extends Model {
+    protected ?string $table = 'enrollments';
 
     public int $id;
     public int $course_id;

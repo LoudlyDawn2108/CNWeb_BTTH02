@@ -1,19 +1,26 @@
 <?php
+namespace Models;
+use Lib\Model;
+
 require_once __DIR__ . '/../lib/Model.php';
 
-class User extends Model {
-    const TABLE = 'users';
-    const ID = 'id';
-    const USERNAME = 'username';
-    const EMAIL = 'email';
-    const PASSWORD = 'password';
-    const FULLNAME = 'fullname';
-    const ROLE = 'role';
-    const STATUS = 'status';
-    const AVATAR = 'avatar';
-    const CREATED_AT = 'created_at';
+class UserTable {
+    public function __toString(): string {
+        return 'users';
+    }
+    public string $ID = 'users.id';
+    public string $USERNAME = 'users.username';
+    public string $EMAIL = 'users.email';
+    public string $PASSWORD = 'users.password';
+    public string $FULLNAME = 'users.fullname';
+    public string $ROLE = 'users.role';
+    public string $STATUS = 'users.status';
+    public string $AVATAR = 'users.avatar';
+    public string $CREATED_AT = 'users.created_at';
+}
 
-    protected ?string $table = self::TABLE;
+class User extends Model {
+    protected ?string $table = 'users';
 
     public int $id;
     public string $username;

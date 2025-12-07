@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Database Configuration Class
  * Handles database connection using PDO

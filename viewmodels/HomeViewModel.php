@@ -2,8 +2,8 @@
 
 namespace ViewModels;
 
-use Category;
-use Course;
+use Models\Category;
+use Models\Course;
 use Lib\ViewModel;
 
 class FeaturedCourse extends Course
@@ -25,15 +25,6 @@ class HomeIndexViewModel extends ViewModel
         public array  $categories,
     )
     {
+        parent::__construct();
     }
 }
-
-class PageViewModel extends ViewModel
-{
-    public function __construct(
-        public string $title
-    )
-    {
-    }
-}
-

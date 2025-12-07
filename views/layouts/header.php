@@ -13,7 +13,7 @@ use Lib\ViewModel;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="/">
@@ -101,5 +101,5 @@ use Lib\ViewModel;
     <?php endif; ?>
 </div>
 
-<main>
+<main class="flex-grow-1 d-flex flex-column">
 
