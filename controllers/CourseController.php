@@ -126,7 +126,7 @@ class CourseController extends Controller {
 
         if (!$course) {
             http_response_code(404);
-            echo 'Khóa học không tồn tại.';
+            require BASE_PATH . '/views/errors/404.php';
             exit;
         }
 

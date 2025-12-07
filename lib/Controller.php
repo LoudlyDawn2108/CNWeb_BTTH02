@@ -90,7 +90,6 @@ abstract class Controller {
     protected function getPost(string $key, $default = null) {
         return $_POST[$key] ?? $default;
     }
-
     protected function getQuery(string $key, $default = null) {
         return $_GET[$key] ?? $default;
     }
