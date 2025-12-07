@@ -126,9 +126,14 @@
                                             <td><?= htmlspecialchars($course['category_name']) ?></td>
                                             <td><?= date('d/m/Y', strtotime($course['created_at'])) ?></td>
                                             <td>
-                                                <a href="/admin/courses/<?= $course['id'] ?>" class="btn btn-sm btn-primary">
-                                                    <i class="bi bi-eye"></i> Xem
-                                                </a>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-success" onclick="approveCourse(<?= $course['id'] ?>)" title="Ph\u00ea duy\u1ec7t">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                    <button class="btn btn-danger" onclick="rejectCourse(<?= $course['id'] ?>)" title="T\u1eeb ch\u1ed1i">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -204,3 +209,56 @@
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<script>
+function approveCourse(courseId) {
+    if (confirm('Bạn có chắc muốn phê duyệt khóa học này?')) {
+        fetch(`/admin/courses/${courseId}/approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'approve' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Có lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra khi phê duyệt khóa học.');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function rejectCourse(courseId) {
+    const reason = prompt('Nhập lý do từ chối (tối thiểu 10 ký tự):');
+    
+    if (reason === null) return; // User cancelled
+    
+    if (reason.trim().length < 10) {
+        alert('Lý do từ chối phải có ít nhất 10 ký tự!');
+        return;
+    }
+    
+    fetch(`/admin/courses/${courseId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason.trim() })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Có lỗi: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Có lỗi xảy ra khi từ chối khóa học.');
+        console.error('Error:', error);
+    });
+}
+</script>
