@@ -206,6 +206,20 @@ class AdminController extends Controller
     }
 
     /**
+     * Create Category - Show create form
+     */
+    public function createCategory(): void
+    {
+        $viewModel = new \ViewModels\AdminCategoryFormViewModel(
+            title: "Th\u00eam danh m\u1ee5c m\u1edbi - Feetcode",
+            category: null,
+            isEdit: false
+        );
+
+        $this->render('admin/categories/create', $viewModel);
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void

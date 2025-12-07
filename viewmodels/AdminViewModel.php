@@ -44,3 +44,12 @@ class AdminCategoriesViewModel extends ViewModel
         public string $search
     ) {}
 }
+
+class AdminCategoryFormViewModel extends ViewModel
+{
+    public function __construct(
+        public string $title,
+        public ?array $category,
+        public bool $isEdit
+    ) {}
+}
