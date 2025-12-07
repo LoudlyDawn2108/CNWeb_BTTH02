@@ -32,3 +32,15 @@ class AdminUsersViewModel extends ViewModel
         public string $statusFilter
     ) {}
 }
+
+class AdminCategoriesViewModel extends ViewModel
+{
+    public function __construct(
+        public string $title,
+        public array $categories,
+        public array $stats,
+        public int $currentPage,
+        public int $totalPages,
+        public string $search
+    ) {}
+}

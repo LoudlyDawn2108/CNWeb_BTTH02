@@ -71,6 +71,7 @@ try {
     $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
     $router->get('/admin/users', [AdminController::class, 'manageUsers']);
     $router->post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus']);
+    $router->get('/admin/categories', [AdminController::class, 'listCategories']);
 
 
     // Dispatch

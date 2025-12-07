@@ -146,6 +146,66 @@ class AdminController extends Controller
     }
 
     /**
+     * List Categories - Display all categories with course count
+     */
+    public function listCategories(): void
+    {
+        // Get search parameter
+        $search = $_GET['search'] ?? '';
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
+
+        // Build query with course count
+        $query = Category::query()
+            ->select([
+                'c.*',
+                'COUNT(co.id) as course_count'
+            ])
+            ->table('categories c')
+            ->leftJoin('courses co', 'c.id', '=', 'co.category_id')
+            ->groupBy('c.id');
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->whereRaw('(c.name LIKE :search OR c.description LIKE :search2)', [
+                ':search' => "%{$search}%",
+                ':search2' => "%{$search}%"
+            ]);
+        }
+
+        // Get total count for pagination
+        $totalCategories = Category::query()->count();
+        
+        // Get categories with pagination
+        $categories = $query
+            ->orderBy('c.name', 'ASC')
+            ->limit($perPage)
+            ->offset($offset)
+            ->get();
+
+        $categories = array_map(fn($c) => $c->toArray(), $categories);
+        $totalPages = ceil($totalCategories / $perPage);
+
+        // Get statistics
+        $stats = [
+            'total_categories' => $totalCategories,
+            'total_courses' => Course::query()->count(),
+        ];
+
+        $viewModel = new \ViewModels\AdminCategoriesViewModel(
+            title: "Quản lý danh mục - Feetcode",
+            categories: $categories,
+            stats: $stats,
+            currentPage: $page,
+            totalPages: $totalPages,
+            search: $search
+        );
+
+        $this->render('admin/categories', $viewModel);
+    }
+
+    /**
      * Admin Dashboard - Display statistics and overview
      */
     public function dashboard(): void
