@@ -1,5 +1,16 @@
 <?php
 
+require_once __DIR__ . '/../models/Course.php';
+require_once __DIR__ . '/../models/Category.php';
+require_once __DIR__ . '/../models/Lesson.php';
+require_once __DIR__ . '/../models/Enrollment.php';
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../viewmodels/instructor/CourseFormViewModel.php';
+require_once __DIR__ . '/../viewmodels/instructor/CourseManageViewModel.php';
+require_once __DIR__ . '/../viewmodels/instructor/InstructorDashboardViewModel.php';
+require_once __DIR__ . '/../viewmodels/instructor/StudentListViewModel.php';
+require_once __DIR__ . '/../viewmodels/instructor/UploadMaterialsViewModel.php';
+
 use Functional\Collection;
 use Functional\Option;
 use Functional\Result;
@@ -8,9 +19,16 @@ use Lib\Controller;
 use Models\Course;
 use Models\Category;
 use Models\Lesson;
+use Models\Enrollment;
+use Models\User;
+use Models\CourseTable;
+use Models\EnrollmentTable;
+use Models\UserTable;
 use ViewModels\Instructor\CourseFormViewModel;
 use ViewModels\Instructor\CourseManageViewModel;
 use ViewModels\Instructor\InstructorDashboardViewModel;
+use ViewModels\Instructor\StudentListViewModel;
+use ViewModels\Instructor\UploadMaterialsViewModel;
 
 class InstructorController extends Controller
 {
@@ -339,5 +357,105 @@ class InstructorController extends Controller
 
             return $fileName;
         });
+    }
+
+    /**
+     * List enrolled students
+     */
+    public function listStudents($courseId = null) {
+        $this->requireRole(User::ROLE_INSTRUCTOR);
+
+        $instructorId = $_SESSION['user_id'];
+        
+        $e = new EnrollmentTable();
+        $u = new UserTable();
+        $c = new CourseTable();
+
+        if ($courseId) {
+            $course = Course::find($courseId);
+            if ($course) {
+                if ($course->instructor_id != $instructorId) {
+                     $_SESSION['error'] = 'Bạn không có quyền xem.';
+                     $this->redirect('/instructor/my-courses');
+                }
+                
+                $students = Enrollment::query()
+                    ->select([
+                        $e . '.*', 
+                        $u->FULLNAME . ' as student_name', 
+                        $u->EMAIL . ' as student_email', 
+                        $u->AVATAR
+                    ])
+                    ->leftJoin($u, $e->STUDENT_ID, '=', $u->ID)
+                    ->where($e->COURSE_ID, $courseId)
+                    ->orderBy($e->ENROLLED_DATE, 'DESC')
+                    ->get();
+                $students = array_map(fn($s) => $s->toArray(), $students);
+                
+                $this->renderStudents($students, $course->toArray(), 'Danh sách học viên - ' . $course->title);
+            } else {
+                $_SESSION['error'] = 'Khóa học không tồn tại.';
+                $this->redirect('/instructor/my-courses');
+            }
+        } else {
+            $students = Enrollment::query()
+                ->select([
+                    $e . '.*', 
+                    $c->TITLE . ' as course_title', 
+                    $u->FULLNAME . ' as student_name', 
+                    $u->EMAIL . ' as student_email'
+                ])
+                ->join($c, $e->COURSE_ID, '=', $c->ID)
+                ->leftJoin($u, $e->STUDENT_ID, '=', $u->ID)
+                ->where($c->INSTRUCTOR_ID, $instructorId)
+                ->orderBy($e->ENROLLED_DATE, 'DESC')
+                ->get();
+            $students = array_map(fn($s) => $s->toArray(), $students);
+            
+            $this->renderStudents($students, null, 'Tất cả học viên');
+        }
+    }
+
+    private function renderStudents($students, $course, $pageTitle) {
+        $viewModel = new StudentListViewModel(
+            title: $pageTitle . ' - FeetCode',
+            students: $students,
+            course: $course
+        );
+        $this->render('instructor/students/list', $viewModel);
+    }
+
+    /**
+     * View material upload page
+     */
+    public function uploadMaterials($courseId) {
+        $this->requireRole(User::ROLE_INSTRUCTOR);
+
+        $course = Course::find($courseId);
+        
+        if ($course) {
+             if ($course->instructor_id != $_SESSION['user_id']) {
+                $_SESSION['error'] = 'Bạn không có quyền quản lý.';
+                $this->redirect('/instructor/my-courses');
+            }
+
+            $lessons = Lesson::query()
+                ->where('course_id', $courseId)
+                ->orderBy('`order`', 'ASC')
+                ->get();
+            $lessons = array_map(fn($l) => $l->toArray(), $lessons);
+
+            $viewModel = new UploadMaterialsViewModel(
+                title: 'Tải tài liệu - ' . $course->title,
+                course: $course->toArray(),
+                lessons: $lessons
+            );
+            unset($_SESSION['success'], $_SESSION['error']);
+
+            $this->render('instructor/materials/upload', $viewModel);
+        } else {
+             $_SESSION['error'] = 'Khóa học không tồn tại.';
+             $this->redirect('/instructor/my-courses');
+        }
     }
 }

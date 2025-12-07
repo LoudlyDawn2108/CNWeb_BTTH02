@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Online Course Management System
  */
@@ -124,6 +124,18 @@ try {
     $router->get('/auth/logout', [AuthController::class, 'logout']);
 
     // ----------------- TEAM MEMBER 2: Authentication & Student Dashboard -----------------
+
+    $router->post('/enrollment/enroll', [EnrollmentController::class, 'enroll']);
+    $router->post('/enrollment/unenroll', [EnrollmentController::class, 'unenroll']);
+
+    $router->get('/student/dashboard', [EnrollmentController::class, 'studentDashboard']);
+    $router->get('/student/my-courses', [EnrollmentController::class, 'myCourses']);
+    $router->get('/student/course/{id}/progress', [EnrollmentController::class, 'courseProgress']);
+    $router->get('/student/lesson/{id}', [EnrollmentController::class, 'viewLesson']);
+
+    $router->get('/instructor/course/{id}/students', [InstructorController::class, 'listStudents']);
+    $router->get('/instructor/students', [InstructorController::class, 'listStudents']);
+    $router->get('/instructor/course/{id}/materials', [InstructorController::class, 'uploadMaterials']);
 
     // ----------------- TEAM MEMBER 3: Instructor Module (Full-Stack) -----------------
 // 1. Dashboard
