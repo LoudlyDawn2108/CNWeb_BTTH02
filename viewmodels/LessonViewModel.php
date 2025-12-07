@@ -14,5 +14,7 @@ class LessonViewModel extends ViewModel {
         public array $enrollment,
         public ?array $nextLesson = null,
         public ?array $prevLesson = null
-    ) {}
+    ) {
+        parent::__construct();
+    }
 }
