@@ -83,7 +83,7 @@ class AdminController extends Controller
             statusFilter: $statusFilter
         );
 
-        $this->render('admin/users', $viewModel);
+        $this->render('admin/users/manage', $viewModel);
     }
 
     /**
@@ -202,7 +202,7 @@ class AdminController extends Controller
             search: $search
         );
 
-        $this->render('admin/categories', $viewModel);
+        $this->render('admin/categories/list', $viewModel);
     }
 
     /**
