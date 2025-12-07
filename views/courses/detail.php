@@ -65,16 +65,22 @@ use ViewModels\CourseDetailViewModel;
                                         </button>
                                     </h2>
                                     <div id="lesson<?= $lesson->id ?>" class="accordion-collapse collapse <?= $index === 0 ? 'show' : '' ?>">
-                                        <div class="accordion-body">
+                                        <div class="accordion-body d-flex justify-content-between align-content-center">
                                             <?php if ($viewModel->isEnrolled): ?>
                                                 <p><?= nl2br(htmlspecialchars(substr($lesson->content ?? '', 0, 200))) ?>...</p>
                                                 <a href="/student/lesson/<?= $lesson->id ?>" class="btn btn-sm btn-primary">
                                                     <i class="bi bi-play-circle"></i> Học ngay
                                                 </a>
+                                            <?php elseif ($viewModel->currentUser): ?>
+                                                <p><?= nl2br(htmlspecialchars(substr($lesson->content ?? '', 0, 200))) ?>...</p>
+                                                <a href="/enrollment/enroll<?= $lesson->id ?>" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-play-circle"></i> Đăng ký ngay
+                                                </a>
                                             <?php else: ?>
-                                                <p class="text-muted">
-                                                    <i class="bi bi-lock"></i> Đăng ký khóa học để xem nội dung bài học
-                                                </p>
+                                                <p><?= nl2br(htmlspecialchars(substr($lesson->content ?? '', 0, 200))) ?>...</p>
+                                                <a href="/auth/login" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-play-circle"></i> Đăng ký ngay
+                                                </a>
                                             <?php endif; ?>
                                         </div>
                                     </div>

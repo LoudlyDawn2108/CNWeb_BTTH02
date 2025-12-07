@@ -102,7 +102,7 @@ class CourseController extends Controller {
     /**
      * Display course details
      */
-    public function detail($id) {
+    public function detail($id): void {
         $c = new CourseTable();
         $cat = new CategoryTable();
         $u = new UserTable();
@@ -112,7 +112,7 @@ class CourseController extends Controller {
         /** @var CourseView $course */
         $course = Course::query()
                         ->select(
-                            ["$c.*", "$cat->NAME as category_name", "$u->FULLNAME as instructor_name", "$u->EMAIL as instructor_email",
+                            ["$c.*", "$cat->NAME as category_name", "$u->FULLNAME as instructor_name",
                                 "(SELECT COUNT(*) FROM $e WHERE $e->COURSE_ID = $c->ID) as enrollment_count",
                                 "(SELECT COUNT(*) FROM $l WHERE $l->COURSE_ID = $c->ID) as lesson_count"])
                         ->table($c)
@@ -209,7 +209,6 @@ class CourseController extends Controller {
         }
 
         $categories = Category::all();
-        $categories = array_map(fn($c) => $c->toArray(), $categories);
 
         $viewModel = new CourseSearchViewModel(
             title:      'Tìm kiếm: ' . htmlspecialchars($keyword) . ' - Online Course',

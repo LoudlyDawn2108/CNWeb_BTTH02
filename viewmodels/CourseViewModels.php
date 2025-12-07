@@ -10,7 +10,6 @@ use Models\Lesson;
 class CourseView extends Course {
     public ?string $category_name;
     public ?string $instructor_name;
-    public ?string $instructor_email;
     public ?string $enrollment_count;
     public ?string $lesson_count;
 }
@@ -41,7 +40,7 @@ class CourseDetailViewModel extends ViewModel {
      * @param bool $isEnrolled
      * @param ?array $enrollment
      * @param CourseView[] $relatedCourses
-     * @param array $currentUser
+     * @param ?array $currentUser
      */
     public function __construct(
         public string     $title,
@@ -50,13 +49,19 @@ class CourseDetailViewModel extends ViewModel {
         public bool       $isEnrolled,
         public ?array      $enrollment = [],
         public array      $relatedCourses,
-        public array      $currentUser = [],
+        public ?array      $currentUser = [],
     ) {
         parent::__construct();
     }
 }
 
 class CourseSearchViewModel extends ViewModel {
+    /**
+     * @param string $title
+     * @param CourseView[] $courses
+     * @param string $keyword
+     * @param Category[] $categories
+     */
     public function __construct(
         public string $title,
         public array  $courses,
