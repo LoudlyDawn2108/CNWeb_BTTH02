@@ -83,7 +83,7 @@ class AdminController extends Controller
             statusFilter: $statusFilter
         );
 
-        $this->render('admin/users/manage', $viewModel);
+        $this->render('admin/users/manage', $viewModel, true);
     }
 
     /**
@@ -202,7 +202,7 @@ class AdminController extends Controller
             search: $search
         );
 
-        $this->render('admin/categories/list', $viewModel);
+        $this->render('admin/categories/list', $viewModel, true);
     }
 
     /**
@@ -216,7 +216,7 @@ class AdminController extends Controller
             isEdit: false
         );
 
-        $this->render('admin/categories/create', $viewModel);
+        $this->render('admin/categories/create', $viewModel, true);
     }
 
     /**
@@ -302,7 +302,7 @@ class AdminController extends Controller
             isEdit: true
         );
 
-        $this->render('admin/categories/edit', $viewModel);
+        $this->render('admin/categories/edit', $viewModel, true);
     }
 
     /**
@@ -656,7 +656,7 @@ class AdminController extends Controller
             monthlyUsers: $monthlyUsers
         );
 
-        $this->render('admin/reports/statistics', $viewModel);
+        $this->render('admin/reports/statistics', $viewModel, true);
     }
 
     /**
@@ -703,6 +703,6 @@ class AdminController extends Controller
             recentUsers: $recentUsers
         );
 
-        $this->render('admin/dashboard', $viewModel);
+        $this->render('admin/dashboard', $viewModel, true);
     }
 }

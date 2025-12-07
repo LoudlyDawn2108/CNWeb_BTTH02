@@ -10,7 +10,7 @@ abstract class Controller {
     /**
      * Render a view with a ViewModel
      */
-    protected function render(string $viewPath, ViewModel $viewModel): void
+    protected function render(string $viewPath, ViewModel $viewModel, bool $useAdminLayout = false): void
     {
         // Start buffering for the main content
         ob_start();
@@ -27,7 +27,17 @@ abstract class Controller {
         // Pass $viewModel to the header and footer layout files as well.
         // These layout files will now expect a $viewModel variable.
         require_once BASE_PATH . '/views/layouts/header.php';
+        
+        if ($useAdminLayout) {
+            require_once BASE_PATH . '/views/layouts/admin_sidebar_start.php';
+        }
+        
         echo $content;
+        
+        if ($useAdminLayout) {
+            require_once BASE_PATH . '/views/layouts/admin_sidebar_end.php';
+        }
+        
         require_once BASE_PATH . '/views/layouts/footer.php';
     }
 
