@@ -31,23 +31,23 @@ $category = $viewModel->category;
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form method="POST" action="/admin/categories/<?= $category['id'] ?>/update" id="categoryForm">
+                    <form method="POST" action="/admin/categories/<?= $viewModel->id ?>/update" id="categoryForm">
                         <div class="mb-3">
                             <label for="name" class="form-label">
                                 Tên danh mục <span class="text-danger">*</span>
                             </label>
                             <input 
                                 type="text" 
-                                class="form-control <?= isset($_SESSION['errors']['name']) ? 'is-invalid' : '' ?>" 
+                                class="form-control <?= $viewModel->modelState->hasError('name') ? 'is-invalid' : '' ?>" 
                                 id="name" 
                                 name="name" 
-                                value="<?= isset($_SESSION['old']['name']) ? htmlspecialchars($_SESSION['old']['name']) : htmlspecialchars($category['name']) ?>"
+                                value="<?= htmlspecialchars($viewModel->name) ?>"
                                 required
                                 maxlength="100"
                                 placeholder="Ví dụ: Lập trình Web, Khoa học dữ liệu...">
-                            <?php if (isset($_SESSION['errors']['name'])): ?>
+                            <?php if ($viewModel->modelState->hasError('name')): ?>
                                 <div class="invalid-feedback">
-                                    <?= $_SESSION['errors']['name']; ?>
+                                    <?= htmlspecialchars($viewModel->modelState->getFirstError('name')) ?>
                                 </div>
                             <?php endif; ?>
                             <div class="form-text">
@@ -58,15 +58,15 @@ $category = $viewModel->category;
                         <div class="mb-3">
                             <label for="description" class="form-label">Mô tả</label>
                             <textarea 
-                                class="form-control <?= isset($_SESSION['errors']['description']) ? 'is-invalid' : '' ?>" 
+                                class="form-control <?= $viewModel->modelState->hasError('description') ? 'is-invalid' : '' ?>" 
                                 id="description" 
                                 name="description" 
                                 rows="5"
                                 maxlength="500"
-                                placeholder="Mô tả chi tiết về danh mục này..."><?= isset($_SESSION['old']['description']) ? htmlspecialchars($_SESSION['old']['description']) : htmlspecialchars($category['description'] ?? '') ?></textarea>
-                            <?php if (isset($_SESSION['errors']['description'])): ?>
+                                placeholder="Mô tả chi tiết về danh mục này..."><?= htmlspecialchars($viewModel->description) ?></textarea>
+                            <?php if ($viewModel->modelState->hasError('description')): ?>
                                 <div class="invalid-feedback">
-                                    <?= $_SESSION['errors']['description']; ?>
+                                    <?= htmlspecialchars($viewModel->modelState->getFirstError('description')) ?>
                                 </div>
                             <?php endif; ?>
                             <div class="form-text">
@@ -95,18 +95,18 @@ $category = $viewModel->category;
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-5">ID:</dt>
-                        <dd class="col-sm-7"><?= $category['id'] ?></dd>
+                        <dd class="col-sm-7"><?= $category['id'] ?? $viewModel->id ?></dd>
 
                         <dt class="col-sm-5">Số khóa học:</dt>
                         <dd class="col-sm-7">
-                            <span class="badge bg-primary"><?= number_format($category['course_count']) ?></span>
+                            <span class="badge bg-primary"><?= number_format($category['course_count'] ?? 0) ?></span>
                         </dd>
 
                         <dt class="col-sm-5">Ngày tạo:</dt>
-                        <dd class="col-sm-7"><?= date('d/m/Y H:i', strtotime($category['created_at'])) ?></dd>
+                        <dd class="col-sm-7"><?= isset($category['created_at']) ? date('d/m/Y H:i', strtotime($category['created_at'])) : 'N/A' ?></dd>
                     </dl>
 
-                    <?php if ($category['course_count'] > 0): ?>
+                    <?php if (($category['course_count'] ?? 0) > 0): ?>
                         <hr>
                         <div class="alert alert-warning mb-0 small">
                             <i class="bi bi-exclamation-triangle"></i> Danh mục này đang được sử dụng bởi <strong><?= number_format($category['course_count']) ?></strong> khóa học.
@@ -138,12 +138,6 @@ $category = $viewModel->category;
         </div>
     </div>
 </div>
-
-<?php
-// Clear old input and errors after displaying
-unset($_SESSION['old']);
-unset($_SESSION['errors']);
-?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 

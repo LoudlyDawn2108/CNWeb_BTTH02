@@ -37,16 +37,16 @@
                             </label>
                             <input 
                                 type="text" 
-                                class="form-control <?= isset($_SESSION['errors']['name']) ? 'is-invalid' : '' ?>" 
+                                class="form-control <?= $viewModel->modelState->hasError('name') ? 'is-invalid' : '' ?>" 
                                 id="name" 
                                 name="name" 
-                                value="<?= isset($_SESSION['old']['name']) ? htmlspecialchars($_SESSION['old']['name']) : '' ?>"
+                                value="<?= htmlspecialchars($viewModel->name) ?>"
                                 required
                                 maxlength="100"
                                 placeholder="Ví dụ: Lập trình Web, Khoa học dữ liệu...">
-                            <?php if (isset($_SESSION['errors']['name'])): ?>
+                            <?php if ($viewModel->modelState->hasError('name')): ?>
                                 <div class="invalid-feedback">
-                                    <?= $_SESSION['errors']['name']; ?>
+                                    <?= htmlspecialchars($viewModel->modelState->getFirstError('name')) ?>
                                 </div>
                             <?php endif; ?>
                             <div class="form-text">
@@ -57,15 +57,15 @@
                         <div class="mb-3">
                             <label for="description" class="form-label">Mô tả</label>
                             <textarea 
-                                class="form-control <?= isset($_SESSION['errors']['description']) ? 'is-invalid' : '' ?>" 
+                                class="form-control <?= $viewModel->modelState->hasError('description') ? 'is-invalid' : '' ?>" 
                                 id="description" 
                                 name="description" 
                                 rows="5"
                                 maxlength="500"
-                                placeholder="Mô tả chi tiết về danh mục này..."><?= isset($_SESSION['old']['description']) ? htmlspecialchars($_SESSION['old']['description']) : '' ?></textarea>
-                            <?php if (isset($_SESSION['errors']['description'])): ?>
+                                placeholder="Mô tả chi tiết về danh mục này..."><?= htmlspecialchars($viewModel->description) ?></textarea>
+                            <?php if ($viewModel->modelState->hasError('description')): ?>
                                 <div class="invalid-feedback">
-                                    <?= $_SESSION['errors']['description']; ?>
+                                    <?= htmlspecialchars($viewModel->modelState->getFirstError('description')) ?>
                                 </div>
                             <?php endif; ?>
                             <div class="form-text">
@@ -118,12 +118,6 @@
         </div>
     </div>
 </div>
-
-<?php
-// Clear old input and errors after displaying
-unset($_SESSION['old']);
-unset($_SESSION['errors']);
-?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
