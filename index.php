@@ -157,7 +157,26 @@ try {
     $router->post('/instructor/materials/{id}/delete', [LessonController::class, 'deleteMaterial']);
 
     // ----------------- TEAM MEMBER 4: Admin Module (Full-Stack) -----------------
+    
+    // Admin Dashboard
+    $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
+    $router->get('/admin/users', [AdminController::class, 'manageUsers']);
+    $router->post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus']);
 
+    // Admin Categories
+    $router->get('/admin/categories', [AdminController::class, 'listCategories']);
+    $router->get('/admin/categories/create', [AdminController::class, 'createCategory']);
+    $router->post('/admin/categories/store', [AdminController::class, 'storeCategory']);
+    $router->get('/admin/categories/{id}/edit', [AdminController::class, 'editCategory']);
+    $router->post('/admin/categories/{id}/update', [AdminController::class, 'updateCategory']);
+    $router->post('/admin/categories/{id}/delete', [AdminController::class, 'deleteCategory']);
+
+    // Admin Course Approval
+    $router->post('/admin/courses/{id}/approve', [AdminController::class, 'approveCourse']);
+    $router->post('/admin/courses/{id}/reject', [AdminController::class, 'rejectCourse']);
+
+    // Admin Reports
+    $router->get('/admin/reports/statistics', [AdminController::class, 'statistics']);
 
     // Dispatch
     $router->dispatch($_SERVER['REQUEST_METHOD'], $requestUri);
