@@ -30,7 +30,7 @@ class Category extends Model {
     public ?string $created_at = null;
 
     // Virtual property for view
-    public int $course_count = 0;
+    public ?int $course_count = null;
     protected array $fillable = [
         'name',
         'description',

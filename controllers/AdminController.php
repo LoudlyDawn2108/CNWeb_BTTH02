@@ -2,24 +2,26 @@
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Course.php';
 require_once __DIR__ . '/../models/Enrollment.php';
+require_once __DIR__ . '/../models/Category.php';
 require_once __DIR__ . '/../viewmodels/AdminViewModel.php';
 
 use Lib\Controller;
+use Models\Category;
+use Models\CategoryTable;
+use Models\Course;
+use Models\CourseTable;
+use Models\Enrollment;
+use Models\EnrollmentTable;
+use Models\User;
+use Models\UserTable;
 use ViewModels\AdminDashboardViewModel;
 
-class AdminController extends Controller
-{
-    public function __construct()
-    {
-        // Ensure admin is logged in
-        // $this->requireRole(User::ROLE_ADMIN);
-    }
+class AdminController extends Controller {
 
     /**
      * Manage Users - Display, filter, and manage all users
      */
-    public function manageUsers(): void
-    {
+    public function manageUsers(): void {
         // Get query parameters for filtering and pagination
         $search = $_GET['search'] ?? '';
         $roleFilter = $_GET['role'] ?? '';
@@ -28,12 +30,15 @@ class AdminController extends Controller
         $perPage = 15;
         $offset = ($page - 1) * $perPage;
 
+        $u = new UserTable();
+
         // Build query
         $query = User::query();
 
         // Apply search filter
         if (!empty($search)) {
-            $query->whereRaw('(username LIKE :search OR fullname LIKE :search2 OR email LIKE :search3)', [
+            $query->whereRaw(
+                "($u->USERNAME LIKE :search OR $u->FULLNAME LIKE :search2 OR $u->EMAIL LIKE :search3)", [
                 ':search' => "%{$search}%",
                 ':search2' => "%{$search}%",
                 ':search3' => "%{$search}%"
@@ -42,12 +47,12 @@ class AdminController extends Controller
 
         // Apply role filter
         if ($roleFilter !== '') {
-            $query->where('role', $roleFilter);
+            $query->where($u->ROLE, $roleFilter);
         }
 
         // Apply status filter
         if ($statusFilter !== '') {
-            $query->where('status', $statusFilter);
+            $query->where($u->STATUS, $statusFilter);
         }
 
         // Get total count for pagination
@@ -56,7 +61,7 @@ class AdminController extends Controller
 
         // Get users with pagination
         $users = $query
-            ->orderBy('created_at', 'DESC')
+            ->orderBy($u->CREATED_AT, 'DESC')
             ->limit($perPage)
             ->offset($offset)
             ->get();
@@ -66,20 +71,20 @@ class AdminController extends Controller
         // Get statistics for each role
         $roleStats = [
             'total' => User::query()->count(),
-            'students' => User::query()->where('role', User::ROLE_STUDENT)->count(),
-            'instructors' => User::query()->where('role', User::ROLE_INSTRUCTOR)->count(),
-            'admins' => User::query()->where('role', User::ROLE_ADMIN)->count(),
+            'students' => User::query()->where($u->ROLE, User::ROLE_STUDENT)->count(),
+            'instructors' => User::query()->where($u->ROLE, User::ROLE_INSTRUCTOR)->count(),
+            'admins' => User::query()->where($u->ROLE, User::ROLE_ADMIN)->count(),
         ];
 
         $viewModel = new \ViewModels\AdminUsersViewModel(
-            title: "Quản lý người dùng - Feetcode",
-            users: $users,
-            roleStats: $roleStats,
-            currentPage: $page,
-            totalPages: $totalPages,
-            totalUsers: $totalUsers,
-            search: $search,
-            roleFilter: $roleFilter,
+            title:        "Quản lý người dùng - Feetcode",
+            users:        $users,
+            roleStats:    $roleStats,
+            currentPage:  $page,
+            totalPages:   $totalPages,
+            totalUsers:   $totalUsers,
+            search:       $search,
+            roleFilter:   $roleFilter,
             statusFilter: $statusFilter
         );
 
@@ -89,86 +94,94 @@ class AdminController extends Controller
     /**
      * Toggle User Status (Active/Inactive)
      */
-    public function toggleUserStatus(int $id): void
-    {
+    public function toggleUserStatus(int $id): void {
         header('Content-Type: application/json');
-        
+
         try {
             // Get the status from request body
             $input = json_decode(file_get_contents('php://input'), true);
             $newStatus = isset($input['status']) ? (int)$input['status'] : null;
-            
+
             if ($newStatus === null || !in_array($newStatus, [0, 1])) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Trạng thái không hợp lệ'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Trạng thái không hợp lệ'
+                    ]);
                 return;
             }
-            
+
             // Find user
             $user = User::find($id);
-            
+
             if (!$user) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Không tìm thấy người dùng'
+                    ]);
                 return;
             }
-            
+
             // Prevent admin from deactivating themselves
             if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $id && $newStatus == 0) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Bạn không thể vô hiệu hóa tài khoản của chính mình'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Bạn không thể vô hiệu hóa tài khoản của chính mình'
+                    ]);
                 return;
             }
-            
+
             // Update status
             $user->status = $newStatus;
             $user->save();
-            
-            $_SESSION['success'] = 'Cập nhật trạng thái người dùng thành công';
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Cập nhật thành công'
-            ]);
-            
+
+            $this->setSuccessMessage('Cập nhật trạng thái người dùng thành công');
+
+            echo json_encode(
+                [
+                    'success' => true,
+                    'message' => 'Cập nhật thành công'
+                ]);
+
         } catch (Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ]);
+            echo json_encode(
+                [
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                ]);
         }
     }
 
     /**
      * List Categories - Display all categories with course count
      */
-    public function listCategories(): void
-    {
+    public function listCategories(): void {
         // Get search parameter
         $search = $_GET['search'] ?? '';
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = 20;
         $offset = ($page - 1) * $perPage;
 
+        $cat = new CategoryTable();
+        $c = new CourseTable();
+
         // Build query with course count
         $query = Category::query()
-            ->select([
-                'c.*',
-                'COUNT(co.id) as course_count'
-            ])
-            ->table('categories c')
-            ->leftJoin('courses co', 'c.id', '=', 'co.category_id')
-            ->groupBy('c.id');
+                         ->select(
+                             [
+                                 "$cat.*",
+                                 "COUNT($c->ID) as course_count"
+                             ])
+                         ->table($cat)
+                         ->leftJoin($c, $cat->ID, '=', $c->CATEGORY_ID)
+                         ->groupBy($cat->ID);
 
         // Apply search filter
         if (!empty($search)) {
-            $query->whereRaw('(c.name LIKE :search OR c.description LIKE :search2)', [
+            $query->whereRaw(
+                "($cat->NAME LIKE :search OR $cat->DESCRIPTION LIKE :search2)", [
                 ':search' => "%{$search}%",
                 ':search2' => "%{$search}%"
             ]);
@@ -176,10 +189,10 @@ class AdminController extends Controller
 
         // Get total count for pagination
         $totalCategories = Category::query()->count();
-        
+
         // Get categories with pagination
         $categories = $query
-            ->orderBy('c.name', 'ASC')
+            ->orderBy($cat->NAME, 'ASC')
             ->limit($perPage)
             ->offset($offset)
             ->get();
@@ -194,12 +207,12 @@ class AdminController extends Controller
         ];
 
         $viewModel = new \ViewModels\AdminCategoriesViewModel(
-            title: "Quản lý danh mục - Feetcode",
-            categories: $categories,
-            stats: $stats,
+            title:       "Quản lý danh mục - Feetcode",
+            categories:  $categories,
+            stats:       $stats,
             currentPage: $page,
-            totalPages: $totalPages,
-            search: $search
+            totalPages:  $totalPages,
+            search:      $search
         );
 
         $this->render('admin/categories/list', $viewModel, true);
@@ -208,13 +221,11 @@ class AdminController extends Controller
     /**
      * Create Category - Show create form
      */
-    public function createCategory(): void
-    {
+    public function createCategory(): void {
         $viewModel = new \ViewModels\AdminCategoryFormViewModel(
-            title: "Th\u00eam danh m\u1ee5c m\u1edbi - Feetcode",
-            category: null,
-            isEdit: false
+            title: "Thêm danh mục mới - Feetcode"
         );
+        $viewModel->isEdit = false;
 
         $this->render('admin/categories/create', $viewModel, true);
     }
@@ -222,85 +233,53 @@ class AdminController extends Controller
     /**
      * Store Category - Handle form submission
      */
-    public function storeCategory(): void
-    {
-        $errors = [];
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
+    public function storeCategory(): void {
+        $viewModel = new \ViewModels\AdminCategoryFormViewModel(title: "Thêm danh mục mới - Feetcode");
+        $viewModel->isEdit = false;
+        $viewModel->handleRequest($_POST);
 
-        // Validation
-        if (empty($name)) {
-            $errors['name'] = 'T\u00ean danh m\u1ee5c kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng';
-        } elseif (strlen($name) < 3) {
-            $errors['name'] = 'T\u00ean danh m\u1ee5c ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t 3 k\u00fd t\u1ef1';
-        } elseif (strlen($name) > 100) {
-            $errors['name'] = 'T\u00ean danh m\u1ee5c kh\u00f4ng \u0111\u01b0\u1ee3c qu\u00e1 100 k\u00fd t\u1ef1';
-        } else {
-            // Check for duplicate category name
-            $existingCategory = Category::query()
-                ->whereRaw('LOWER(name) = LOWER(:name)', [':name' => $name])
-                ->first();
-            
-            if ($existingCategory) {
-                $errors['name'] = 'T\u00ean danh m\u1ee5c \u0111\u00e3 t\u1ed3n t\u1ea1i';
+        if ($viewModel->modelState->isValid) {
+            try {
+                $category = new Category();
+                $category->name = $viewModel->name;
+                $category->description = !empty($viewModel->description) ? $viewModel->description : null;
+                $category->save();
+
+                $this->setSuccessMessage('Thêm danh mục thành công');
+                $this->redirect('/admin/categories');
+                return;
+
+            } catch (Exception $e) {
+                $this->setErrorMessage('Có lỗi xảy ra: ' . $e->getMessage());
             }
         }
 
-        if (!empty($description) && strlen($description) > 500) {
-            $errors['description'] = 'M\u00f4 t\u1ea3 kh\u00f4ng \u0111\u01b0\u1ee3c qu\u00e1 500 k\u00fd t\u1ef1';
-        }
-
-        // If validation fails, redirect back with errors
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['old'] = $_POST;
-            $_SESSION['error'] = 'Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i th\u00f4ng tin';
-            $this->redirect('/admin/categories/create');
-        }
-
-        try {
-            // Create category
-            $category = new Category();
-            $category->name = $name;
-            $category->description = !empty($description) ? $description : null;
-            $category->save();
-
-            $_SESSION['success'] = 'Th\u00eam danh m\u1ee5c th\u00e0nh c\u00f4ng';
-            $this->redirect('/admin/categories');
-
-        } catch (Exception $e) {
-            $_SESSION['error'] = 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage();
-            $_SESSION['old'] = $_POST;
-            $this->redirect('/admin/categories/create');
-        }
+        // If validation failed or error occurred
+        $this->render('admin/categories/create', $viewModel, true);
     }
 
     /**
      * Edit Category - Show edit form with existing data
      */
-    public function editCategory(int $id): void
-    {
+    public function editCategory(int $id): void {
         // Find category
         $category = Category::find($id);
 
         if (!$category) {
-            $_SESSION['error'] = 'Kh\u00f4ng t\u00ecm th\u1ea5y danh m\u1ee5c';
+            $this->setErrorMessage('Không tìm thấy danh mục');
             $this->redirect('/admin/categories');
         }
 
-        // Get course count for this category
-        $courseCount = Course::query()
-            ->where('category_id', $id)
-            ->count();
-
-        $categoryData = $category->toArray();
-        $categoryData['course_count'] = $courseCount;
-
         $viewModel = new \ViewModels\AdminCategoryFormViewModel(
-            title: "Ch\u1ec9nh s\u1eeda danh m\u1ee5c - Feetcode",
-            category: $categoryData,
-            isEdit: true
+            title: "Chỉnh sửa danh mục - Feetcode"
         );
+
+        // Hydrate ViewModel from DB
+        $viewModel->id = $id;
+        $viewModel->name = $category->name;
+        $viewModel->description = $category->description ?? '';
+        $viewModel->isEdit = true;
+        $viewModel->category = $category->toArray(); // Keep for view compatibility if needed
 
         $this->render('admin/categories/edit', $viewModel, true);
     }
@@ -308,352 +287,345 @@ class AdminController extends Controller
     /**
      * Update Category - Handle edit form submission
      */
-    public function updateCategory(int $id): void
-    {
-        $errors = [];
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
+    public function updateCategory(int $id): void {
+        $viewModel = new \ViewModels\AdminCategoryFormViewModel(title: "Chỉnh sửa danh mục - Feetcode");
+        $viewModel->isEdit = true;
+        $viewModel->id = $id;
+        $viewModel->handleRequest($_POST);
 
-        // Find category
+        // Find category first to ensure it exists
         $category = Category::find($id);
-        
         if (!$category) {
-            $_SESSION['error'] = 'Kh\u00f4ng t\u00ecm th\u1ea5y danh m\u1ee5c';
+            $this->setErrorMessage('Không tìm thấy danh mục');
             $this->redirect('/admin/categories');
         }
 
-        // Validation
-        if (empty($name)) {
-            $errors['name'] = 'T\u00ean danh m\u1ee5c kh\u00f4ng \u0111\u01b0\u1ee3c \u0111\u1ec3 tr\u1ed1ng';
-        } elseif (strlen($name) < 3) {
-            $errors['name'] = 'T\u00ean danh m\u1ee5c ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t 3 k\u00fd t\u1ef1';
-        } elseif (strlen($name) > 100) {
-            $errors['name'] = 'T\u00ean danh m\u1ee5c kh\u00f4ng \u0111\u01b0\u1ee3c qu\u00e1 100 k\u00fd t\u1ef1';
-        } else {
-            // Check for duplicate category name (excluding current category)
-            $existingCategory = Category::query()
-                ->whereRaw('LOWER(name) = LOWER(:name) AND id != :id', [
-                    ':name' => $name,
-                    ':id' => $id
-                ])
-                ->first();
-            
-            if ($existingCategory) {
-                $errors['name'] = 'T\u00ean danh m\u1ee5c \u0111\u00e3 t\u1ed3n t\u1ea1i';
+        if ($viewModel->modelState->isValid) {
+            try {
+                $category->name = $viewModel->name;
+                $category->description = !empty($viewModel->description) ? $viewModel->description : null;
+                $category->save();
+
+                $this->setSuccessMessage('Cập nhật danh mục thành công');
+                $this->redirect('/admin/categories');
+                return;
+
+            } catch (Exception $e) {
+                $this->setErrorMessage('Có lỗi xảy ra: ' . $e->getMessage());
             }
         }
 
-        if (!empty($description) && strlen($description) > 500) {
-            $errors['description'] = 'M\u00f4 t\u1ea3 kh\u00f4ng \u0111\u01b0\u1ee3c qu\u00e1 500 k\u00fd t\u1ef1';
-        }
+        // Restore category data for view context if needed
+        $viewModel->category = $category->toArray();
 
-        // If validation fails, redirect back with errors
-        if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
-            $_SESSION['old'] = $_POST;
-            $_SESSION['error'] = 'Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i th\u00f4ng tin';
-            $this->redirect('/admin/categories/' . $id . '/edit');
-        }
-
-        try {
-            // Update category
-            $category->name = $name;
-            $category->description = !empty($description) ? $description : null;
-            $category->save();
-
-            $_SESSION['success'] = 'C\u1eadp nh\u1eadt danh m\u1ee5c th\u00e0nh c\u00f4ng';
-            $this->redirect('/admin/categories');
-
-        } catch (Exception $e) {
-            $_SESSION['error'] = 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage();
-            $_SESSION['old'] = $_POST;
-            $this->redirect('/admin/categories/' . $id . '/edit');
-        }
+        // Render view with errors
+        $this->render('admin/categories/edit', $viewModel, true);
     }
 
     /**
      * Delete Category - Remove category if not in use
      */
-    public function deleteCategory(int $id): void
-    {
+    public function deleteCategory(int $id): void {
         header('Content-Type: application/json');
-        
+
         try {
             // Find category
             $category = Category::find($id);
-            
+
             if (!$category) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Kh\u00f4ng t\u00ecm th\u1ea5y danh m\u1ee5c'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Không tìm thấy danh mục'
+                    ]);
                 return;
             }
-            
-            // Check if category has courses
+
+            // Get course count for this category
+            $c = new CourseTable();
             $courseCount = Course::query()
-                ->where('category_id', $id)
-                ->count();
-            
+                                 ->where($c->CATEGORY_ID, $id)
+                                 ->count();
+
+            $categoryData = $category->toArray();
+
             if ($courseCount > 0) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => "Kh\u00f4ng th\u1ec3 x\u00f3a danh m\u1ee5c n\u00e0y v\u00ec \u0111ang c\u00f3 {$courseCount} kh\u00f3a h\u1ecdc s\u1eed d\u1ee5ng"
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => "Không thể xóa danh mục này vì đang có {$courseCount} khóa học sử dụng"
+                    ]);
                 return;
             }
-            
+
             // Delete category
             $categoryName = $category->name;
             $category->delete();
-            
-            $_SESSION['success'] = "\u0110\u00e3 x\u00f3a danh m\u1ee5c '{$categoryName}' th\u00e0nh c\u00f4ng";
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'X\u00f3a danh m\u1ee5c th\u00e0nh c\u00f4ng'
-            ]);
-            
+
+            $this->setSuccessMessage("Đã xóa danh mục '{$categoryName}' thành công");
+
+            echo json_encode(
+                [
+                    'success' => true,
+                    'message' => 'Xóa danh mục thành công'
+                ]);
+
         } catch (Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage()
-            ]);
+            echo json_encode(
+                [
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                ]);
         }
     }
 
     /**
      * Approve Course - Change course status (approve/reject)
      */
-    public function approveCourse(int $id): void
-    {
-        header('Content-Type: application/json');
-        
+    public function approveCourse(int $id): void {
+        header("Content - Type: application / json");
+
         try {
             // Get action from request body
             $input = json_decode(file_get_contents('php://input'), true);
             $action = $input['action'] ?? 'approve'; // approve or reject
             $rejectReason = $input['reason'] ?? null;
-            
+
             // Validate action
             if (!in_array($action, ['approve', 'reject'])) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'H\u00e0nh \u0111\u1ed9ng kh\u00f4ng h\u1ee3p l\u1ec7'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Hành động không hợp lệ'
+                    ]);
                 return;
             }
-            
+
             // Find course
             $course = Course::find($id);
-            
+
             if (!$course) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Kh\u00f4ng t\u00ecm th\u1ea5y kh\u00f3a h\u1ecdc'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Không tìm thấy khóa học'
+                    ]);
                 return;
             }
-            
+
             // Check if course is pending
             if ($course->status !== 'pending') {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Kh\u00f3a h\u1ecdc n\u00e0y \u0111\u00e3 \u0111\u01b0\u1ee3c x\u1eed l\u00fd r\u1ed3i'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Khóa học này đã được xử lý rồi'
+                    ]);
                 return;
             }
-            
+
             // Update course status
             if ($action === 'approve') {
                 $course->status = 'approved';
-                $message = 'Ph\u00ea duy\u1ec7t kh\u00f3a h\u1ecdc th\u00e0nh c\u00f4ng';
-                $sessionMessage = "\u0110\u00e3 ph\u00ea duy\u1ec7t kh\u00f3a h\u1ecdc '{$course->title}'";
+                $message = 'Phê duyệt khóa học thành công';
+                $sessionMessage = "Đã phê duyệt khóa học '{$course->title}'";
             } else {
                 $course->status = 'rejected';
-                $message = 'T\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc th\u00e0nh c\u00f4ng';
-                $sessionMessage = "\u0110\u00e3 t\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc '{$course->title}'";
-                
+                $message = 'Từ chối khóa học thành công';
+                $sessionMessage = "Đã từ chối khóa học '{$course->title}'";
+
                 if ($rejectReason) {
-                    $sessionMessage .= ". L\u00fd do: {$rejectReason}";
+                    $sessionMessage .= ". Lý do: {$rejectReason}";
                 }
             }
-            
+
             $course->save();
-            
-            $_SESSION['success'] = $sessionMessage;
-            
-            echo json_encode([
-                'success' => true,
-                'message' => $message,
-                'new_status' => $course->status
-            ]);
-            
+
+            $this->setSuccessMessage($sessionMessage);
+
+            echo json_encode(
+                [
+                    'success' => true,
+                    'message' => $message,
+                    'new_status' => $course->status
+                ]);
+
         } catch (Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage()
-            ]);
+            echo json_encode(
+                [
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                ]);
         }
     }
 
     /**
      * Reject Course - Explicitly reject a course with reason
      */
-    public function rejectCourse(int $id): void
-    {
+    public function rejectCourse(int $id): void {
         header('Content-Type: application/json');
-        
+
         try {
             // Get reason from request body
             $input = json_decode(file_get_contents('php://input'), true);
             $reason = trim($input['reason'] ?? '');
-            
+
             // Validate reason is provided
             if (empty($reason)) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Vui l\u00f2ng nh\u1eadp l\u00fd do t\u1eeb ch\u1ed1i'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Vui lòng nhập lý do từ chối'
+                    ]);
                 return;
             }
-            
+
             if (strlen($reason) < 10) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'L\u00fd do t\u1eeb ch\u1ed1i ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t 10 k\u00fd t\u1ef1'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Lý do từ chối phải có ít nhất 10 ký tự'
+                    ]);
                 return;
             }
-            
+
             // Find course
             $course = Course::find($id);
-            
+
             if (!$course) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Kh\u00f4ng t\u00ecm th\u1ea5y kh\u00f3a h\u1ecdc'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Không tìm thấy khóa học'
+                    ]);
                 return;
             }
-            
+
             // Check if course is pending
             if ($course->status !== 'pending') {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Kh\u00f3a h\u1ecdc n\u00e0y \u0111\u00e3 \u0111\u01b0\u1ee3c x\u1eed l\u00fd r\u1ed3i'
-                ]);
+                echo json_encode(
+                    [
+                        'success' => false,
+                        'message' => 'Khóa học này đã được xử lý rồi'
+                    ]);
                 return;
             }
-            
+
             // Update course status to rejected
             $course->status = 'rejected';
+
             $course->save();
-            
-            $_SESSION['success'] = "\u0110\u00e3 t\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc '{$course->title}'. L\u00fd do: {$reason}";
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'T\u1eeb ch\u1ed1i kh\u00f3a h\u1ecdc th\u00e0nh c\u00f4ng',
-                'new_status' => 'rejected'
-            ]);
-            
+
+            $this->setSuccessMessage("Đã từ chối khóa học '{$course->title}'. Lý do: {$reason}");
+
+            echo json_encode(
+                [
+                    'success' => true,
+                    'message' => 'Từ chối khóa học thành công',
+                    'new_status' => 'rejected'
+                ]);
+
         } catch (Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'C\u00f3 l\u1ed7i x\u1ea3y ra: ' . $e->getMessage()
-            ]);
+            echo json_encode(
+                [
+                    'success' => false,
+                    'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                ]);
         }
     }
 
     /**
      * Statistics Report - Comprehensive analytics and reports
      */
-    public function statistics(): void
-    {
+    public function statistics(): void {
+        $u = new UserTable();
+        $c = new CourseTable();
+        $e = new EnrollmentTable();
+        $cat = new CategoryTable();
+
         // User Statistics
         $userStats = [
             'total' => User::query()->count(),
-            'students' => User::query()->where('role', User::ROLE_STUDENT)->count(),
-            'instructors' => User::query()->where('role', User::ROLE_INSTRUCTOR)->count(),
-            'admins' => User::query()->where('role', User::ROLE_ADMIN)->count(),
-            'active' => User::query()->where('status', 1)->count(),
-            'inactive' => User::query()->where('status', 0)->count(),
+            'students' => User::query()->where($u->ROLE, User::ROLE_STUDENT)->count(),
+            'instructors' => User::query()->where($u->ROLE, User::ROLE_INSTRUCTOR)->count(),
+            'admins' => User::query()->where($u->ROLE, User::ROLE_ADMIN)->count(),
+            'active' => User::query()->where($u->STATUS, 1)->count(),
+            'inactive' => User::query()->where($u->STATUS, 0)->count(),
         ];
 
         // Course Statistics
         $courseStats = [
             'total' => Course::query()->count(),
-            'approved' => Course::query()->where('status', 'approved')->count(),
-            'pending' => Course::query()->where('status', 'pending')->count(),
-            'rejected' => Course::query()->where('status', 'rejected')->count(),
+            'approved' => Course::query()->where($c->STATUS, 'approved')->count(),
+            'pending' => Course::query()->where($c->STATUS, 'pending')->count(),
+            'rejected' => Course::query()->where($c->STATUS, 'rejected')->count(),
         ];
 
         // Enrollment Statistics
         $enrollmentStats = [
             'total' => Enrollment::query()->count(),
-            'active' => Enrollment::query()->where('status', 'active')->count(),
-            'completed' => Enrollment::query()->where('status', 'completed')->count(),
+            'active' => Enrollment::query()->where($e->STATUS, 'active')->count(),
+            'completed' => Enrollment::query()->where($e->STATUS, 'completed')->count(),
         ];
 
         // Category Statistics
         $categoryStats = Category::query()
-            ->select(['c.id', 'c.name', 'COUNT(co.id) as course_count'])
-            ->table('categories c')
-            ->leftJoin('courses co', 'c.id', '=', 'co.category_id')
-            ->groupBy('c.id', 'c.name')
-            ->orderBy('course_count', 'DESC')
-            ->limit(10)
-            ->get();
+                                 ->select(["$cat->ID", "$cat->NAME", "COUNT($c->ID) as course_count"])
+                                 ->table($cat)
+                                 ->leftJoin($c, $cat->ID, '=', $c->CATEGORY_ID)
+                                 ->groupBy($cat->ID, $cat->NAME)
+                                 ->orderBy('course_count', 'DESC')
+                                 ->limit(10)
+                                 ->get();
 
         $categoryStats = array_map(fn($c) => $c->toArray(), $categoryStats);
 
         // Top Instructors by course count
         $topInstructors = User::query()
-            ->select(['u.*', 'COUNT(c.id) as course_count'])
-            ->table('users u')
-            ->leftJoin('courses c', 'u.id', '=', 'c.instructor_id')
-            ->where('u.role', User::ROLE_INSTRUCTOR)
-            ->groupBy('u.id')
-            ->orderBy('course_count', 'DESC')
-            ->limit(10)
-            ->get();
+                              ->select(["$u.*", "COUNT($c->ID) as course_count"])
+                              ->table($u)
+                              ->leftJoin($c, $u->ID, '=', $c->INSTRUCTOR_ID)
+                              ->where($u->ROLE, User::ROLE_INSTRUCTOR)
+                              ->groupBy($u->ID)
+                              ->orderBy('course_count', 'DESC')
+                              ->limit(10)
+                              ->get();
 
         $topInstructors = array_map(fn($i) => $i->toArray(), $topInstructors);
 
         // Popular Courses by enrollment count
         $popularCourses = Course::query()
-            ->select(['c.*', 'COUNT(e.id) as enrollment_count', 'u.fullname as instructor_name'])
-            ->table('courses c')
-            ->leftJoin('enrollments e', 'c.id', '=', 'e.course_id')
-            ->leftJoin('users u', 'c.instructor_id', '=', 'u.id')
-            ->where('c.status', 'approved')
-            ->groupBy('c.id')
-            ->orderBy('enrollment_count', 'DESC')
-            ->limit(10)
-            ->get();
+                                ->select(
+                                    ["$c.*", "COUNT($e->ID) as enrollment_count", "$u->FULLNAME as instructor_name"])
+                                ->table($c)
+                                ->leftJoin($e, $c->ID, '=', $e->COURSE_ID)
+                                ->leftJoin($u, $c->INSTRUCTOR_ID, '=', $u->ID)
+                                ->where($c->STATUS, 'approved')
+                                ->groupBy($c->ID)
+                                ->orderBy('enrollment_count', 'DESC')
+                                ->limit(10)
+                                ->get();
 
         $popularCourses = array_map(fn($c) => $c->toArray(), $popularCourses);
 
         // Monthly user growth (last 6 months)
         $monthlyUsers = User::query()
-            ->select(['DATE_FORMAT(created_at, \'%Y-%m\') as month', 'COUNT(*) as count'])
-            ->whereRaw('created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)')
-            ->groupBy('month')
-            ->orderBy('month', 'ASC')
-            ->get();
+                            ->select(["DATE_FORMAT($u->CREATED_AT, '%Y-%m') as month", 'COUNT(*) as count'])
+                            ->whereRaw("$u->CREATED_AT >= DATE_SUB(NOW(), INTERVAL 6 MONTH)")
+                            ->groupBy('month')
+                            ->orderBy('month', 'ASC')
+                            ->get();
 
         $monthlyUsers = array_map(fn($m) => $m->toArray(), $monthlyUsers);
 
         $viewModel = new \ViewModels\AdminStatisticsViewModel(
-            title: "Th\u1ed1ng k\u00ea & B\u00e1o c\u00e1o - Feetcode",
-            userStats: $userStats,
-            courseStats: $courseStats,
+            title:           "Thống kê & Báo cáo - Feetcode",
+            userStats:       $userStats,
+            courseStats:     $courseStats,
             enrollmentStats: $enrollmentStats,
-            categoryStats: $categoryStats,
-            topInstructors: $topInstructors,
-            popularCourses: $popularCourses,
-            monthlyUsers: $monthlyUsers
+            categoryStats:   $categoryStats,
+            topInstructors:  $topInstructors,
+            popularCourses:  $popularCourses,
+            monthlyUsers:    $monthlyUsers
         );
 
         $this->render('admin/reports/statistics', $viewModel, true);
@@ -662,45 +634,49 @@ class AdminController extends Controller
     /**
      * Admin Dashboard - Display statistics and overview
      */
-    public function dashboard(): void
-    {
+    public function dashboard(): void {
+        $u = new UserTable();
+        $c = new CourseTable();
+        $e = new EnrollmentTable();
+        $cat = new CategoryTable();
+
         // Get statistics
         $totalUsers = User::query()->count();
-        $totalStudents = User::query()->where('role', User::ROLE_STUDENT)->count();
-        $totalInstructors = User::query()->where('role', User::ROLE_INSTRUCTOR)->count();
+        $totalStudents = User::query()->where($u->ROLE, User::ROLE_STUDENT)->count();
+        $totalInstructors = User::query()->where($u->ROLE, User::ROLE_INSTRUCTOR)->count();
         $totalCourses = Course::query()->count();
         $totalEnrollments = Enrollment::query()->count();
-        
+
         // Get pending courses for approval
         $pendingCourses = Course::query()
-            ->select(['c.*', 'u.fullname as instructor_name', 'cat.name as category_name'])
-            ->table('courses c')
-            ->leftJoin('users u', 'c.instructor_id', '=', 'u.id')
-            ->leftJoin('categories cat', 'c.category_id', '=', 'cat.id')
-            ->where('c.status', 'pending')
-            ->orderBy('c.created_at', 'DESC')
-            ->limit(10)
-            ->get();
+                                ->select(["$c.*", "$u->FULLNAME as instructor_name", "$cat->NAME as category_name"])
+                                ->table($c)
+                                ->leftJoin($u, $c->INSTRUCTOR_ID, '=', $u->ID)
+                                ->leftJoin($cat, $c->CATEGORY_ID, '=', $cat->ID)
+                                ->where($c->STATUS, 'pending')
+                                ->orderBy($c->CREATED_AT, 'DESC')
+                                ->limit(10)
+                                ->get();
 
         $pendingCourses = array_map(fn($c) => $c->toArray(), $pendingCourses);
 
         // Get recent users
         $recentUsers = User::query()
-            ->orderBy('created_at', 'DESC')
-            ->limit(10)
-            ->get();
+                           ->orderBy($u->CREATED_AT, 'DESC')
+                           ->limit(10)
+                           ->get();
 
         $recentUsers = array_map(fn($u) => $u->toArray(), $recentUsers);
 
         $viewModel = new AdminDashboardViewModel(
-            title: "Admin Dashboard - Feetcode",
-            totalUsers: $totalUsers,
-            totalStudents: $totalStudents,
+            title:            "Admin Dashboard - Feetcode",
+            totalUsers:       $totalUsers,
+            totalStudents:    $totalStudents,
             totalInstructors: $totalInstructors,
-            totalCourses: $totalCourses,
+            totalCourses:     $totalCourses,
             totalEnrollments: $totalEnrollments,
-            pendingCourses: $pendingCourses,
-            recentUsers: $recentUsers
+            pendingCourses:   $pendingCourses,
+            recentUsers:      $recentUsers
         );
 
         $this->render('admin/dashboard', $viewModel, true);
