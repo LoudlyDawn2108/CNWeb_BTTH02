@@ -157,7 +157,8 @@ class QueryBuilder {
      * Execute INSERT query
      */
     public function insert(array $data): string|false {
-        $columns = implode(', ', array_keys($data));
+        $columns = implode(',', array_map(fn($k) => "`$k`", array_keys($data)));
+
         $placeholders = [];
         $params = [];
         
@@ -184,7 +185,7 @@ class QueryBuilder {
         
         foreach ($data as $key => $value) {
             $paramName = ':upd_' . $key;
-            $sets[] = "{$key} = {$paramName}";
+            $sets[] = "`{$key}` = {$paramName}";
             $params[$paramName] = $value;
         }
         

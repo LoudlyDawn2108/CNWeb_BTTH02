@@ -90,6 +90,8 @@ CREATE TABLE IF NOT EXISTS materials (
     INDEX idx_lesson (lesson_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE materials MODIFY file_type VARCHAR(255);
+
 -- Insert sample data
 
 -- Insert admin user (password: admin123)
