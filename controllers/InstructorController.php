@@ -362,7 +362,8 @@ class InstructorController extends Controller
     /**
      * List enrolled students
      */
-    public function listStudents($courseId = null) {
+    public function listStudents($courseId = null): void
+    {
         $this->requireRole(User::ROLE_INSTRUCTOR);
 
         $instructorId = $_SESSION['user_id'];
@@ -416,7 +417,8 @@ class InstructorController extends Controller
         }
     }
 
-    private function renderStudents($students, $course, $pageTitle) {
+    private function renderStudents($students, $course, $pageTitle): void
+    {
         $viewModel = new StudentListViewModel(
             title: $pageTitle . ' - FeetCode',
             students: $students,

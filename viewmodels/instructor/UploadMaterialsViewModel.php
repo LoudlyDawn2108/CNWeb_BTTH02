@@ -9,5 +9,7 @@ class UploadMaterialsViewModel extends ViewModel {
         public string $title,
         public array $course,
         public array $lessons
-    ) {}
+    ) {
+        parent::__construct();
+    }
 }
