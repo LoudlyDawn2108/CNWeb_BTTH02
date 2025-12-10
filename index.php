@@ -133,9 +133,9 @@ try {
     $router->get('/student/course/{id}/progress', [EnrollmentController::class, 'courseProgress']);
     $router->get('/student/lesson/{id}', [EnrollmentController::class, 'viewLesson']);
 
-    $router->get('/instructor/course/{id}/students', [InstructorController::class, 'listStudents']);
+    $router->get('/instructor/courses/{id}/students', [InstructorController::class, 'listStudents']);
     $router->get('/instructor/students', [InstructorController::class, 'listStudents']);
-    $router->get('/instructor/course/{id}/materials', [InstructorController::class, 'uploadMaterials']);
+    $router->get('/instructor/courses/{id}/materials', [InstructorController::class, 'uploadMaterials']);
 
     // ----------------- TEAM MEMBER 3: Instructor Module (Full-Stack) -----------------
 // 1. Dashboard

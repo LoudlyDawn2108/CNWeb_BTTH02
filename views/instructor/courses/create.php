@@ -48,7 +48,7 @@
                                 <?php endif; ?>
                             </div>
 
-                            <div class="row g-3">
+                            <div class="row g-3">   
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold">Danh mục <span class="text-danger">*</span></label>
                                     <select name="category_id" 

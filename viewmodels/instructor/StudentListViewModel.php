@@ -9,5 +9,7 @@ class StudentListViewModel extends ViewModel {
         public string $title,
         public array $students,
         public ?array $course = null
-    ) {}
+    ) {
+        parent::__construct();
+    }
 }
