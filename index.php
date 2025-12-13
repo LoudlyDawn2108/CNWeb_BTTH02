@@ -151,6 +151,7 @@ try {
     $router->post('/instructor/courses/{id}/delete', [InstructorController::class, 'deleteCourse']); // Xóa
 
     $router->get('/instructor/courses/{id}/manage', [InstructorController::class, 'manageCourse']); // Trang chi tiết khóa học
+    $router->get('/instructor/courses/{id}/analytics', [InstructorController::class, 'courseAnalytics']); // Trang thống kê
 
     // 3. Quản lý Bài học (Lessons - Nested trong Course)
     // URL: /instructor/courses/{id khóa học}/lessons/...

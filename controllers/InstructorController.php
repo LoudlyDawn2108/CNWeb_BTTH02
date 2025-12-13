@@ -10,6 +10,7 @@ require_once __DIR__ . '/../viewmodels/instructor/CourseManageViewModel.php';
 require_once __DIR__ . '/../viewmodels/instructor/InstructorDashboardViewModel.php';
 require_once __DIR__ . '/../viewmodels/instructor/StudentListViewModel.php';
 require_once __DIR__ . '/../viewmodels/instructor/UploadMaterialsViewModel.php';
+require_once __DIR__ . '/../viewmodels/instructor/CourseAnalyticsViewModel.php';
 
 use Functional\Collection;
 use Functional\Option;
@@ -29,6 +30,7 @@ use ViewModels\Instructor\CourseManageViewModel;
 use ViewModels\Instructor\InstructorDashboardViewModel;
 use ViewModels\Instructor\StudentListViewModel;
 use ViewModels\Instructor\UploadMaterialsViewModel;
+use ViewModels\Instructor\CourseAnalyticsViewModel;
 
 class InstructorController extends Controller
 {
@@ -260,6 +262,61 @@ class InstructorController extends Controller
 
                         $viewModel = new CourseManageViewModel($course, $lessons);
                         $this->render('instructor/courses/manage', $viewModel);
+                    },
+                    function () {
+                        $this->setErrorMessage('Không tìm thấy khóa học');
+                        $this->redirect('/instructor/dashboard');
+                    }
+                );
+            },
+            fn() => $this->redirect('/auth/login')
+        );
+    }
+
+    /**
+     * Course Analytics - Thống kê chi tiết khóa học
+     */
+    public function courseAnalytics($id): void
+    {
+        $this->user()->match(
+            function ($user) use ($id) {
+                $courseModel = new Course();
+                $lessonModel = new Lesson();
+
+                $courseModel->getById($id)->match(
+                    function ($course) use ($user, $lessonModel) {
+                        if ($course->instructor_id != $user['id']) {
+                            http_response_code(403);
+                            die('Không có quyền truy cập');
+                        }
+
+                        // Lấy lessons
+                        $lessons = $lessonModel->getByCourse($course->id);
+
+                        // Lấy enrollments với thông tin học viên
+                        $e = new EnrollmentTable();
+                        $u = new UserTable();
+
+                        $enrollments = Enrollment::query()
+                            ->select([
+                                $e . '.*',
+                                $u->FULLNAME . ' as student_name'
+                            ])
+                            ->leftJoin($u, $e->STUDENT_ID, '=', $u->ID)
+                            ->where($e->COURSE_ID, $course->id)
+                            ->orderBy($e->ENROLLED_DATE, 'DESC')
+                            ->get();
+
+                        $enrollmentsArray = array_map(fn($en) => $en->toArray(), $enrollments);
+                        $enrollmentsCollection = Collection::make($enrollmentsArray);
+
+                        $viewModel = new CourseAnalyticsViewModel(
+                            $course,
+                            $lessons,
+                            $enrollmentsCollection
+                        );
+
+                        $this->render('instructor/courses/analytics', $viewModel);
                     },
                     function () {
                         $this->setErrorMessage('Không tìm thấy khóa học');
