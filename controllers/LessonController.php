@@ -90,8 +90,8 @@ class LessonController extends Controller {
             $this->redirect('/instructor/dashboard');
         }
 
-        // Lấy tài liệu (Giả sử Material model cũng kế thừa lib\Model)
-        // Lưu ý: lib\Model::all() trả về array, bạn cần ép sang Collection nếu ViewModel cần
+        // Lấy tài liệu
+        // Lưu ý: lib\Model::all() trả về array
 
         $materialModel = new Material();
 
@@ -100,7 +100,6 @@ class LessonController extends Controller {
         $materials = Collection::make($materialsRaw);
 
         // Chuyển Object Lesson thành Array hoặc Option tùy ViewModel yêu cầu
-        // Giả sử ViewModel nhận Option<Object>
         $viewModel = new LessonFormViewModel(
             (int)$lesson->course_id,
             Option::some($lesson), // Bọc object vào Option
@@ -200,12 +199,14 @@ class LessonController extends Controller {
 
         // Tạo tên file unique
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $filename = time() . '_' . uniqid() . '.' . $extension;
+        $filename = time() . '_' . uniqid('', true) . '.' . $extension;
         $uploadPath = BASE_PATH . '/assets/uploads/materials/';
 
         // Tạo thư mục nếu chưa có
         if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0755, true);
+            if (!mkdir($uploadPath, 0755, true) && !is_dir($uploadPath)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $uploadPath));
+            }
         }
 
         if (move_uploaded_file($file['tmp_name'], $uploadPath . $filename)) {

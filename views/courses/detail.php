@@ -2,6 +2,7 @@
 /** @var CourseDetailViewModel $viewModel */
 
 use ViewModels\CourseDetailViewModel;
+use Models\User;
 
 ?>
 <div class="container py-4">
@@ -73,9 +74,18 @@ use ViewModels\CourseDetailViewModel;
                                                 </a>
                                             <?php elseif ($viewModel->currentUser): ?>
                                                 <p><?= nl2br(htmlspecialchars(substr($lesson->content ?? '', 0, 200))) ?>...</p>
-                                                <a href="/enrollment/enroll<?= $lesson->id ?>" class="btn btn-sm btn-primary">
-                                                    <i class="bi bi-play-circle"></i> Đăng ký ngay
-                                                </a>
+                                                
+                                                <?php if ($viewModel->currentUser['role'] == User::ROLE_INSTRUCTOR): ?>
+                                                    <!-- Instructor View -->
+                                                    <button class="btn btn-sm btn-secondary" disabled>
+                                                        <i class="bi bi-person-badge"></i> Giảng viên
+                                                    </button>
+                                                <?php else: ?>
+                                                    <!-- Student View (Original) -->
+                                                    <a href="/enrollment/enroll<?= $lesson->id ?>" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-play-circle"></i> Đăng ký ngay
+                                                    </a>
+                                                <?php endif; ?>
                                             <?php else: ?>
                                                 <p><?= nl2br(htmlspecialchars(substr($lesson->content ?? '', 0, 200))) ?>...</p>
                                                 <a href="/auth/login" class="btn btn-sm btn-primary">
@@ -119,12 +129,31 @@ use ViewModels\CourseDetailViewModel;
                             <i class="bi bi-play-circle"></i> Tiếp tục học
                         </a>
                     <?php elseif ($viewModel->currentUser): ?>
-                        <form action="/enrollment/enroll" method="POST">
-                            <input type="hidden" name="course_id" value="<?= $viewModel->course->id ?>">
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <i class="bi bi-cart-plus"></i> Đăng ký ngay
-                            </button>
-                        </form>
+                        <?php if ($viewModel->currentUser['role'] == User::ROLE_INSTRUCTOR): ?>
+                            <?php if ($viewModel->course->instructor_id == $viewModel->currentUser['id']): ?>
+                                <a href="/instructor/courses/<?= $viewModel->course->id ?>/manage" class="btn btn-warning btn-lg w-100 mb-2">
+                                    <i class="bi bi-gear-fill me-2"></i>Quản lý khóa học
+                                </a>
+                                <div class="text-center text-muted small">
+                                    <i class="bi bi-eye"></i> Bạn đang xem với tư cách chủ sở hữu
+                                </div>
+                            <?php else: ?>
+                                <button class="btn btn-secondary btn-lg w-100" disabled>
+                                    <i class="bi bi-person-badge me-2"></i>Tài khoản Giảng viên
+                                </button>
+                                <div class="alert alert-info mt-3 mb-0 small">
+                                    <i class="bi bi-info-circle"></i> Giảng viên chỉ có quyền xem thông tin khóa học.
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <!-- Student View (Original) -->
+                            <form action="/enrollment/enroll" method="POST">
+                                <input type="hidden" name="course_id" value="<?= $viewModel->course->id ?>">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-cart-plus"></i> Đăng ký ngay
+                                </button>
+                            </form>
+                        <?php endif; ?>
                     <?php else: ?>
                         <a href="/auth/login" class="btn btn-primary btn-lg w-100">
                             <i class="bi bi-box-arrow-in-right"></i> Đăng nhập để đăng ký
