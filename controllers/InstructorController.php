@@ -45,10 +45,7 @@ class InstructorController extends Controller
                 error_log("Raw courses: " . print_r($rawCourses, true));
 
                 // 2. BIẾN HÌNH: Ép kiểu Array thành Collection
-                // (Giả sử class Collection của bạn có hàm static make())
                 $coursesCollection = Collection::make($rawCourses);
-
-                // Bây giờ mới ném vào ViewModel được
                 $viewModel = new InstructorDashboardViewModel($coursesCollection);
 
                 $this->render('instructor/dashboard', $viewModel);
@@ -287,7 +284,7 @@ class InstructorController extends Controller
                             die('Không có quyền truy cập');
                         }
 
-                        if ($courseModel->deleteCourse($id)) { // ← Đổi thành deleteCourse
+                        if ($courseModel->deleteCourse($id)) {
                             $this->setSuccessMessage('Đã xóa khóa học');
                         } else {
                             $this->setErrorMessage('Không thể xóa khóa học');
