@@ -80,9 +80,9 @@
                         <a href="/instructor/courses/<?= $viewModel->course->id ?>/analytics" class="btn btn-outline-info">
                             <i class="bi bi-graph-up me-2"></i>Thống kê
                         </a>
-                        <button class="btn btn-outline-secondary" onclick="alert('Xem trước khóa học')">
+                        <a href="/course/<?= $viewModel->course->id ?>" target="_blank" class="btn btn-outline-secondary">
                             <i class="bi bi-eye me-2"></i>Xem trước
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
