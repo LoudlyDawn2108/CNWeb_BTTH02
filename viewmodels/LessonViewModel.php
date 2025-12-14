@@ -2,31 +2,31 @@
 
 namespace ViewModels;
 
-require_once __DIR__ . '/StudentViewModels.php';
-
 use Lib\ViewModel;
 use Models\Enrollment;
+use Models\Material;
+use Models\Lesson;
 
 class LessonViewModel extends ViewModel {
     /**
      * @param string $title
      * @param CourseView $course
-     * @param LessonView $lesson
-     * @param LessonView[] $lessons
-     * @param MaterialView[] $materials
+     * @param Lesson $lesson
+     * @param Lesson[] $lessons
+     * @param Material[] $materials
      * @param Enrollment $enrollment
-     * @param LessonView|null $nextLesson
-     * @param LessonView|null $prevLesson
+     * @param Lesson|null $nextLesson
+     * @param Lesson|null $prevLesson
      */
     public function __construct(
         public string      $title,
         public CourseView  $course,
-        public LessonView  $lesson,
+        public Lesson  $lesson,
         public array       $lessons,
         public array       $materials,
         public Enrollment  $enrollment,
-        public ?LessonView $nextLesson = null,
-        public ?LessonView $prevLesson = null
+        public ?Lesson $nextLesson = null,
+        public ?Lesson $prevLesson = null
     ) {
         parent::__construct();
     }

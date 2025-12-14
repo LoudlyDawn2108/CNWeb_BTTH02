@@ -10,6 +10,7 @@ require_once __DIR__ . '/../viewmodels/MyCoursesViewModel.php';
 require_once __DIR__ . '/../viewmodels/CourseProgressViewModels.php';
 require_once __DIR__ . '/../viewmodels/LessonViewModel.php';
 require_once __DIR__ . '/../viewmodels/EnrollmentViewModels.php';
+require_once __DIR__ . '/../viewmodels/CourseViewModels.php';
 require_once __DIR__ . '/../models/Course.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Lesson.php';
@@ -25,17 +26,15 @@ use ViewModels\EnrollViewModel;
 use ViewModels\UnenrollViewModel;
 use ViewModels\EnrollmentView;
 use ViewModels\CourseView;
-use ViewModels\LessonView;
-use ViewModels\MaterialView;
+use Models\Lesson;
+use Models\Material;
 use Models\Course;
 use Models\CourseTable;
 use Models\Enrollment;
 use Models\EnrollmentTable;
 use Models\User;
 use Models\UserTable;
-use Models\Lesson;
 use Models\LessonTable;
-use Models\Material;
 use Models\MaterialTable;
 use Models\CategoryTable;
 
@@ -245,7 +244,7 @@ class EnrollmentController extends Controller {
                 $lessons = Lesson::query()
                     ->where($l->COURSE_ID, $courseId)
                     ->orderBy($l->ORDER, 'ASC')
-                    ->get(LessonView::class);
+                    ->get(Lesson::class);
 
                 $viewModel = new CourseProgressViewModel(
                     title: 'Tiến độ học tập - ' . $course->title,
@@ -275,7 +274,7 @@ class EnrollmentController extends Controller {
         $l = new LessonTable();
         $lesson = Lesson::query()
             ->where($l->ID, $lessonId)
-            ->first(LessonView::class);
+            ->first(Lesson::class);
         
         if ($lesson) {
             $e = new EnrollmentTable();
@@ -302,25 +301,25 @@ class EnrollmentController extends Controller {
                     $lessons = Lesson::query()
                         ->where($l->COURSE_ID, $lesson->course_id)
                         ->orderBy($l->ORDER, 'ASC')
-                        ->get(LessonView::class);
+                        ->get(Lesson::class);
                     
                     $m = new MaterialTable();
                     $materials = Material::query()
                         ->where($m->LESSON_ID, $lessonId)
                         ->orderBy($m->UPLOADED_AT, 'DESC')
-                        ->get(MaterialView::class);
+                        ->get(Material::class);
 
                     $nextLesson = Lesson::query()
                         ->where($l->COURSE_ID, $lesson->course_id)
                         ->where($l->ORDER, '>', $lesson->order)
                         ->orderBy($l->ORDER, 'ASC')
-                        ->first(LessonView::class);
+                        ->first(Lesson::class);
                         
                     $prevLesson = Lesson::query()
                         ->where($l->COURSE_ID, $lesson->course_id)
                         ->where($l->ORDER, '<', $lesson->order)
                         ->orderBy($l->ORDER, 'DESC')
-                        ->first(LessonView::class);
+                        ->first(Lesson::class);
 
                     // Update progress
                     $totalLessons = count($lessons);
