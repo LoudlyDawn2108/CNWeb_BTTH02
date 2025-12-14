@@ -24,8 +24,8 @@ use ViewModels\MyCoursesViewModel;
                     <?php foreach ($viewModel->enrollments as $enrollment): ?>
                         <div class="col-md-6 col-lg-4">
                             <div class="card h-100">
-                                <?php if ($enrollment['course_image']): ?>
-                                    <img src="/<?= htmlspecialchars($enrollment['course_image']) ?>"
+                                <?php if ($enrollment->course_image): ?>
+                                    <img src="/<?= htmlspecialchars($enrollment->course_image) ?>"
                                          class="card-img-top" style="height: 150px; object-fit: cover;">
                                 <?php else: ?>
                                     <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 150px;">
@@ -34,33 +34,33 @@ use ViewModels\MyCoursesViewModel;
                                 <?php endif; ?>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between mb-2">
-                                        <span class="badge bg-primary"><?= htmlspecialchars($enrollment['category_name']) ?></span>
-                                        <span class="badge bg-<?= $enrollment['status'] === 'completed' ? 'success' : ($enrollment['status'] === 'active' ? 'warning' : 'secondary') ?>">
-                                            <?= $enrollment['status'] === 'completed' ? 'Hoàn thành' : ($enrollment['status'] === 'active' ? 'Đang học' : 'Đã hủy') ?>
+                                        <span class="badge bg-primary"><?= htmlspecialchars($enrollment->category_name) ?></span>
+                                        <span class="badge bg-<?= $enrollment->status === 'completed' ? 'success' : ($enrollment->status === 'active' ? 'warning' : 'secondary') ?>">
+                                            <?= $enrollment->status === 'completed' ? 'Hoàn thành' : ($enrollment->status === 'active' ? 'Đang học' : 'Đã hủy') ?>
                                         </span>
                                     </div>
-                                    <h5 class="card-title"><?= htmlspecialchars($enrollment['course_title']) ?></h5>
+                                    <h5 class="card-title"><?= htmlspecialchars($enrollment->course_title) ?></h5>
                                     <p class="text-muted small mb-2">
-                                        <i class="bi bi-person"></i> <?= htmlspecialchars($enrollment['instructor_name']) ?>
+                                        <i class="bi bi-person"></i> <?= htmlspecialchars($enrollment->instructor_name) ?>
                                     </p>
                                     <div class="mb-2">
                                         <small class="text-muted">Tiến độ:</small>
                                         <div class="progress" style="height: 10px;">
-                                            <div class="progress-bar bg-<?= $enrollment['progress'] >= 100 ? 'success' : 'primary' ?>"
-                                                 style="width: <?= $enrollment['progress'] ?>%"></div>
+                                            <div class="progress-bar bg-<?= $enrollment->progress >= 100 ? 'success' : 'primary' ?>"
+                                                 style="width: <?= $enrollment->progress ?>%"></div>
                                         </div>
-                                        <small class="text-muted"><?= $enrollment['progress'] ?>% hoàn thành</small>
+                                        <small class="text-muted"><?= $enrollment->progress ?>% hoàn thành</small>
                                     </div>
                                 </div>
                                 <div class="card-footer bg-white">
                                     <div class="d-flex gap-2">
-                                        <a href="/student/course/<?= $enrollment['course_id'] ?>/progress"
+                                        <a href="/student/course/<?= $enrollment->course_id ?>/progress"
                                            class="btn btn-sm btn-primary flex-grow-1">
                                             <i class="bi bi-play-circle"></i> Tiếp tục học
                                         </a>
                                         <form action="/enrollment/unenroll" method="POST" class="d-inline"
                                               onsubmit="return confirm('Bạn có chắc muốn hủy đăng ký khóa học này?');">
-                                            <input type="hidden" name="course_id" value="<?= $enrollment['course_id'] ?>">
+                                            <input type="hidden" name="course_id" value="<?= $enrollment->course_id ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-danger">
                                                 <i class="bi bi-x-circle"></i>
                                             </button>

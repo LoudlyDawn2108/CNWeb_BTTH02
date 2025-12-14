@@ -89,19 +89,19 @@ use ViewModels\StudentDashboardViewModel;
                             <?php foreach ($viewModel->recentCourses as $enrollment): ?>
                                 <div class="col-md-6 col-lg-3">
                                     <div class="card h-100">
-                                        <?php if ($enrollment['course_image']): ?>
-                                            <img src="/<?= htmlspecialchars($enrollment['course_image']) ?>"
+                                        <?php if ($enrollment->course_image): ?>
+                                            <img src="/<?= htmlspecialchars($enrollment->course_image) ?>"
                                                  class="card-img-top" style="height: 120px; object-fit: cover;">
                                         <?php endif; ?>
                                         <div class="card-body">
-                                            <h6 class="card-title"><?= htmlspecialchars($enrollment['course_title']) ?></h6>
+                                            <h6 class="card-title"><?= htmlspecialchars($enrollment->course_title) ?></h6>
                                             <div class="progress mb-2" style="height: 8px;">
-                                                <div class="progress-bar" style="width: <?= $enrollment['progress'] ?>%"></div>
+                                                <div class="progress-bar" style="width: <?= $enrollment->progress ?>%"></div>
                                             </div>
-                                            <small class="text-muted"><?= $enrollment['progress'] ?>% hoàn thành</small>
+                                            <small class="text-muted"><?= $enrollment->progress ?>% hoàn thành</small>
                                         </div>
                                         <div class="card-footer bg-white">
-                                            <a href="/student/course/<?= $enrollment['course_id'] ?>/progress"
+                                            <a href="/student/course/<?= $enrollment->course_id ?>/progress"
                                                class="btn btn-sm btn-primary w-100">Tiếp tục</a>
                                         </div>
                                     </div>
