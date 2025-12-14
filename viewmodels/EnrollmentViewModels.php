@@ -5,6 +5,16 @@ namespace ViewModels;
 use Lib\ViewModel;
 use Lib\Validation\Attributes\Required;
 use Lib\Validation\Attributes\DisplayName;
+use Models\Enrollment;
+
+class EnrollmentView extends Enrollment {
+    public ?string $course_title = null;
+    public ?string $course_image = null;
+    public ?string $level = null;
+    public ?int $duration_weeks = null;
+    public ?string $category_name = null;
+    public ?string $instructor_name = null;
+}
 
 class EnrollViewModel extends ViewModel
 {
