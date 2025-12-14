@@ -23,6 +23,9 @@ use ViewModels\LessonViewModel;
 use ViewModels\EnrollViewModel;
 use ViewModels\UnenrollViewModel;
 use ViewModels\EnrollmentView;
+use ViewModels\CourseView;
+use ViewModels\LessonView;
+use ViewModels\MaterialView;
 use Models\Course;
 use Models\CourseTable;
 use Models\Enrollment;
@@ -224,13 +227,24 @@ class EnrollmentController extends Controller {
             ->first();
             
         if ($enrollment) {
-            $course = Course::find($courseId);
+            $c = new CourseTable();
+            $cat = new CategoryTable();
+            $u = new UserTable();
+            
+            $course = Course::query()
+                ->select(["$c.*", "$cat->NAME as category_name", "$u->FULLNAME as instructor_name"])
+                ->table($c)
+                ->leftJoin($cat, $c->CATEGORY_ID, '=', $cat->ID)
+                ->leftJoin($u, $c->INSTRUCTOR_ID, '=', $u->ID)
+                ->where($c->ID, $courseId)
+                ->first(CourseView::class);
+                
             if ($course) {
                 $l = new LessonTable();
                 $lessons = Lesson::query()
                     ->where($l->COURSE_ID, $courseId)
                     ->orderBy($l->ORDER, 'ASC')
-                    ->get();
+                    ->get(LessonView::class);
 
                 $viewModel = new CourseProgressViewModel(
                     title: 'Tiến độ học tập - ' . $course->title,
@@ -267,31 +281,42 @@ class EnrollmentController extends Controller {
                 ->first();
                 
             if ($enrollment) {
-                $course = Course::find($lesson->course_id);
+                $c = new CourseTable();
+                $cat = new CategoryTable();
+                $u = new UserTable();
+                
+                $course = Course::query()
+                    ->select(["$c.*", "$cat->NAME as category_name", "$u->FULLNAME as instructor_name"])
+                    ->table($c)
+                    ->leftJoin($cat, $c->CATEGORY_ID, '=', $cat->ID)
+                    ->leftJoin($u, $c->INSTRUCTOR_ID, '=', $u->ID)
+                    ->where($c->ID, $lesson->course_id)
+                    ->first(CourseView::class);
+                    
                 if ($course) {
                     $l = new LessonTable();
                     $lessons = Lesson::query()
                         ->where($l->COURSE_ID, $lesson->course_id)
                         ->orderBy($l->ORDER, 'ASC')
-                        ->get();
+                        ->get(LessonView::class);
                     
                     $m = new MaterialTable();
                     $materials = Material::query()
                         ->where($m->LESSON_ID, $lessonId)
                         ->orderBy($m->UPLOADED_AT, 'DESC')
-                        ->get();
+                        ->get(MaterialView::class);
 
                     $nextLesson = Lesson::query()
                         ->where($l->COURSE_ID, $lesson->course_id)
                         ->where($l->ORDER, '>', $lesson->order)
                         ->orderBy($l->ORDER, 'ASC')
-                        ->first();
+                        ->first(LessonView::class);
                         
                     $prevLesson = Lesson::query()
                         ->where($l->COURSE_ID, $lesson->course_id)
                         ->where($l->ORDER, '<', $lesson->order)
                         ->orderBy($l->ORDER, 'DESC')
-                        ->first();
+                        ->first(LessonView::class);
 
                     // Update progress
                     $totalLessons = count($lessons);
