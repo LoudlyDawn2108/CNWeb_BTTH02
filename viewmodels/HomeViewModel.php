@@ -23,8 +23,7 @@ class HomeIndexViewModel extends ViewModel
         public string $title,
         public array  $featuredCourses,
         public array  $categories,
-    )
-    {
+    ) {
         parent::__construct();
     }
 }
