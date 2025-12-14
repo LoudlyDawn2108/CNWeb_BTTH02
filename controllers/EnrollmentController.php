@@ -14,6 +14,7 @@ require_once __DIR__ . '/../models/Course.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Lesson.php';
 require_once __DIR__ . '/../models/Material.php';
+require_once __DIR__ . '/../models/Category.php';
 
 use Lib\Controller;
 use ViewModels\StudentDashboardViewModel;
@@ -271,7 +272,10 @@ class EnrollmentController extends Controller {
         $this->requireRole(User::ROLE_STUDENT);
 
         $studentId = $_SESSION['user_id'];
-        $lesson = Lesson::find($lessonId);
+        $l = new LessonTable();
+        $lesson = Lesson::query()
+            ->where($l->ID, $lessonId)
+            ->first(LessonView::class);
         
         if ($lesson) {
             $e = new EnrollmentTable();
