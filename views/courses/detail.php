@@ -80,17 +80,7 @@ use Models\User;
                                                     <button class="btn btn-sm btn-secondary" disabled>
                                                         <i class="bi bi-person-badge"></i> Giảng viên
                                                     </button>
-                                                <?php else: ?>
-                                                    <!-- Student View (Original) -->
-                                                    <a href="/enrollment/enroll<?= $lesson->id ?>" class="btn btn-sm btn-primary">
-                                                        <i class="bi bi-play-circle"></i> Đăng ký ngay
-                                                    </a>
                                                 <?php endif; ?>
-                                            <?php else: ?>
-                                                <p><?= nl2br(htmlspecialchars(substr($lesson->content ?? '', 0, 200))) ?>...</p>
-                                                <a href="/auth/login" class="btn btn-sm btn-primary">
-                                                    <i class="bi bi-play-circle"></i> Đăng ký ngay
-                                                </a>
                                             <?php endif; ?>
                                         </div>
                                     </div>
